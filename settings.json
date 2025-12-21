@@ -1,12 +1,4 @@
 {
-    "RPIR1": {
-        "simulated": true,
-        "pin": 7
-    },
-    "RPIR2": {
-        "simulated": true,
-        "pin": 23
-    },
     "DPIR1": {
         "simulated": true,
         "pin": 19

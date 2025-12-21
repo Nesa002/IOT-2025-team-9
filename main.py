@@ -29,8 +29,6 @@ if __name__ == "__main__":
 
     try:
 
-        rpir1_settings = settings['RPIR1']
-        rpir2_settings = settings['RPIR2']
 
         dpir1_setting = settings['DPIR1']
 
@@ -44,10 +42,6 @@ if __name__ == "__main__":
 
         dl_setting=settings['DL']
 
-
-
-        # run_pir('RPIR1', rpir1_settings, threads, stop_event)
-        # run_pir('RPIR2', rpir2_settings, threads, stop_event)
 
         # run_pir('DPIR1', dpir1_setting, threads, stop_event)
 
