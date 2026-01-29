@@ -1,27 +1,62 @@
 {
+    "device": {
+        "pi_id": "PI1",
+        "device_name": "iot-edge-01",
+        "location": "Lab"
+    },
+    "mqtt": {
+        "host": "localhost",
+        "port": 1883,
+        "client_id": "pi1-sensors",
+        "batch_size": 5,
+        "batch_interval_s": 5,
+        "default_topic": "iot/sensors",
+        "qos": 1,
+        "retain": false,
+        "topics": {
+            "DPIR1": "iot/sensors/pir",
+            "DUS1": "iot/sensors/uds",
+            "DMS": "iot/sensors/dms",
+            "DS": "iot/sensors/ds",
+            "DL": "iot/sensors/dl",
+            "DB": "iot/sensors/db"
+        }
+    },
+    "influxdb": {
+        "url": "http://localhost:8086",
+        "token": "changeme",
+        "org": "iot",
+        "bucket": "sensors"
+    },
     "DPIR1": {
         "simulated": true,
-        "pin": 19
+        "pin": 19,
+        "topic": "iot/sensors/pir"
     },
     "DUS1": {
         "simulated": true,
         "trig_pin": 16,
-        "echo_pin": 15
+        "echo_pin": 15,
+        "topic": "iot/sensors/uds"
     },
     "DB": {
         "simulated": true,
-        "pin": 29
+        "pin": 29,
+        "topic": "iot/sensors/db"
     },
-    "DMS":{
+    "DMS": {
         "simulated": true,
-        "pins": [22,24,26,28,32,36,38,40]
+        "pins": [22, 24, 26, 28, 32, 36, 38, 40],
+        "topic": "iot/sensors/dms"
     },
-    "DS":{
+    "DS": {
         "simulated": true,
-        "pin": 37
+        "pin": 37,
+        "topic": "iot/sensors/ds"
     },
-    "DL":{
+    "DL": {
         "simulated": true,
-        "pin": 31
+        "pin": 31,
+        "topic": "iot/sensors/dl"
     }
 }

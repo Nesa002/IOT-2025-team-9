@@ -5,6 +5,7 @@ from components.dl import run_dl
 from components.dms import run_dms
 from components.ds import run_ds
 from settings import load_settings
+from mqtt_publisher import MqttBatchPublisher
 from components.pir import run_pir
 from components.uds import run_uds
 from components.db import run_buzzer
@@ -43,17 +44,21 @@ if __name__ == "__main__":
         dl_setting=settings['DL']
 
 
-        # run_pir('DPIR1', dpir1_setting, threads, stop_event)
+        device_info = settings.get("device", {"pi_id": "PI1", "device_name": "unknown"})
+        publisher = MqttBatchPublisher(settings.get("mqtt", {}), device_info, stop_event)
+        publisher.start()
 
-        # run_uds('DUS1', dus1_settings, threads, stop_event)
+        run_pir('DPIR1', dpir1_setting, threads, stop_event, publisher)
 
-        # run_buzzer(db_setting, threads, stop_event, db_queue)
+        run_uds('DUS1', dus1_settings, threads, stop_event, publisher)
 
-        # run_dms("DMS",dms_setting,threads,stop_event, dms_queue)
+        run_buzzer(db_setting, threads, stop_event, db_queue, publisher)
 
-        # run_ds("DS",ds_setting,threads,stop_event)
+        run_dms("DMS", dms_setting, threads, stop_event, dms_queue, publisher)
 
-        # run_dl("DL",dl_setting,threads,stop_event, dl_queue)
+        run_ds("DS", ds_setting, threads, stop_event, publisher)
+
+        run_dl("DL", dl_setting, threads, stop_event, dl_queue, publisher)
 
 
         while True:
@@ -75,4 +80,3 @@ if __name__ == "__main__":
         print('Stopping app')
         for t in threads:
             stop_event.set()
-
