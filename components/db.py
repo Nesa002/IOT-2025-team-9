@@ -3,16 +3,27 @@ import time
 from sensors.db import Buzzer, run_buzzer_loop
 from simulators.db import run_buzzer_simulator
 
-def buzzer_callback():
+def buzzer_callback(publisher, settings):
     t = time.localtime()
     print("="*20)
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
     print(f"Buzzer triggered: BZZzzzz")
+    if publisher:
+        publisher.enqueue_reading(
+            sensor_type="DB",
+            sensor_name="DB",
+            value="buzz",
+            simulated=settings["simulated"],
+            topic=settings.get("topic"),
+        )
 
-def run_buzzer(settings, threads, stop_event, db_queue):
+def run_buzzer(settings, threads, stop_event, db_queue, publisher=None):
     if settings['simulated']:
         print("Starting Buzzer simulator")
-        buzzer_thread = threading.Thread(target=run_buzzer_simulator, args=(buzzer_callback, stop_event, db_queue))
+        buzzer_thread = threading.Thread(
+            target=run_buzzer_simulator,
+            args=(lambda: buzzer_callback(publisher, settings), stop_event, db_queue),
+        )
         buzzer_thread.start()
         threads.append(buzzer_thread)
         print("Buzzer simulator started")
