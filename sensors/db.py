@@ -19,7 +19,7 @@ class Buzzer:
             GPIO.output(self.pin, False)
             time.sleep(delay)
 
-def run_buzzer_loop(buzzer, stop_event, db_queue):
+def run_buzzer_loop(buzzer, stop_event, db_queue, callback=None):
 
     while not stop_event.is_set():
         try:
@@ -27,6 +27,8 @@ def run_buzzer_loop(buzzer, stop_event, db_queue):
             if user_input == "buzz":
                 pitch = 440 
                 duration = 0.5
+                if callback:
+                    callback("buzz")
                 buzzer.buzz(pitch, duration)
         except queue.Empty:
             pass 

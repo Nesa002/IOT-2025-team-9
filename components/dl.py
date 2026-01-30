@@ -4,7 +4,7 @@ from sensors.dl import DL, run_dl_loop
 from simulators.dl import run_dl_simulator
 
 
-def dl_callback():
+def dl_callback(event, publisher, settings, name):
     """
     Callback function for DL events.
 
@@ -14,11 +14,20 @@ def dl_callback():
     t = time.localtime()
     print("=" * 20)
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
-    print("LED on")
-    time.sleep(5)
-    print("LED off")
+    if event == "led_on":
+        print("LED on")
+    elif event == "led_off":
+        print("LED off")
+    if publisher:
+        publisher.enqueue_reading(
+            sensor_type=name,
+            sensor_name=name,
+            value=event,
+            simulated=settings["simulated"],
+            topic=settings.get("topic"),
+        )
 
-def run_dl(name, settings, threads, stop_event, dl_queue):
+def run_dl(name, settings, threads, stop_event, dl_queue, publisher=None):
     """
     Initializes and runs the DL in either simulated or real mode.
 
@@ -29,14 +38,20 @@ def run_dl(name, settings, threads, stop_event, dl_queue):
     """
     if settings['simulated']:
         print("Starting DL simulator")
-        dl_thread = threading.Thread(target=run_dl_simulator, args=(dl_callback, stop_event, dl_queue))
+        dl_thread = threading.Thread(
+            target=run_dl_simulator,
+            args=(lambda event: dl_callback(event, publisher, settings, name), stop_event, dl_queue),
+        )
         dl_thread.start()
         threads.append(dl_thread)
         print("DL simulator started")
     else:
         print("Starting DL sensor")
         dl = DL(settings['pin'])
-        dl_thread = threading.Thread(target=run_dl_loop, args=(dl, stop_event, dl_queue))
+        dl_thread = threading.Thread(
+            target=run_dl_loop,
+            args=(dl, stop_event, dl_queue, lambda event: dl_callback(event, publisher, settings, name)),
+        )
         dl_thread.start()
         threads.append(dl_thread)
         print("DL loop started")

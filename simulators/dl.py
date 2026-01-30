@@ -5,7 +5,9 @@ def run_dl_simulator(callback, stop_event, dl_queue):
         try:
             user_input = dl_queue.get(timeout=1)
             if user_input == "dl on":
-                callback()
+                callback("led_on")
+                time.sleep(5)
+                callback("led_off")
         except queue.Empty:
             pass 
         except KeyboardInterrupt:

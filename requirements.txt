@@ -1,0 +1,3 @@
+flask
+influxdb-client
+paho-mqtt
