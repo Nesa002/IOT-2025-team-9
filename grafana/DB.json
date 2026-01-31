@@ -1,0 +1,109 @@
+{
+  "id": 6,
+  "type": "timeseries",
+  "title": "DB Buzzer",
+  "gridPos": {
+    "x": 0,
+    "y": 8,
+    "h": 8,
+    "w": 12
+  },
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "stepAfter",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 2,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [
+        {
+          "type": "value",
+          "options": {
+            "0": {
+              "text": "idle",
+              "color": "green"
+            },
+            "1": {
+              "text": "BZZ",
+              "color": "red"
+            }
+          }
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      },
+      "min": 0,
+      "max": 1,
+      "decimals": 0,
+      "unit": "string"
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "import \"experimental\"\n\nbuzz = from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DB\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"buzz\" then 1 else 0 }))\n\nbuzz_zero_after = buzz\n  |> map(fn: (r) => ({ r with _value: 0, _time: experimental.addDuration(d: 1s, to: r._time) }))\n\nunion(tables: [buzz, buzz_zero_after])\n  |> sort(columns: [\"_time\"])\n  |> yield(name: \"state\")\n"
+    }
+  ],
+  "datasource": {
+    "type": "influxdb",
+    "uid": "bfbtzopglup6oc"
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  }
+}

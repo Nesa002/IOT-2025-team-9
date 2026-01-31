@@ -48,17 +48,17 @@ if __name__ == "__main__":
         publisher = MqttBatchPublisher(settings.get("mqtt", {}), device_info, stop_event)
         publisher.start()
 
-        #run_pir('DPIR1', dpir1_setting, threads, stop_event, publisher)
+        run_pir('DPIR1', dpir1_setting, threads, stop_event, publisher)
 
-        #run_uds('DUS1', dus1_settings, threads, stop_event, publisher)
+        run_uds('DUS1', dus1_settings, threads, stop_event, publisher)
 
-        #run_buzzer(db_setting, threads, stop_event, db_queue, publisher)
+        run_buzzer(db_setting, threads, stop_event, db_queue, publisher)
 
-        #run_dms("DMS", dms_setting, threads, stop_event, dms_queue, publisher)
+        run_dms("DMS", dms_setting, threads, stop_event, dms_queue, publisher)
 
-        #run_ds("DS", ds_setting, threads, stop_event, publisher)
+        run_ds("DS", ds_setting, threads, stop_event, publisher)
 
-        #run_dl("DL", dl_setting, threads, stop_event, dl_queue, publisher)
+        run_dl("DL", dl_setting, threads, stop_event, dl_queue, publisher)
 
 
         while True:
