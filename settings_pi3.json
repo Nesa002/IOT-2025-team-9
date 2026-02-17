@@ -25,5 +25,15 @@
         "simulated": true,
         "pin": 23,
         "topic": "iot/sensors/pir3"
+    },
+    "BRGB": {
+        "simulated": true,
+        "topic": "iot/sensors/rgb",
+        "pins": {
+            "red": 12,
+            "green": 13,
+            "blue": 19
+        },
+        "default_color": "white"
     }
 }

@@ -12,7 +12,8 @@ from components.db import run_buzzer
 from components.dht import run_dht
 from components.four_segment import run_display
 from components.lcd import run_lcd
-from components.btn import run_button, Button
+from components.btn import run_button
+from components.rgb import run_rgb
 
 import os
 import time
@@ -40,6 +41,7 @@ if __name__ == "__main__":
     display_queue = queue.Queue()
     lcd_queue = queue.Queue()
     btn_queue = queue.Queue()
+    rgb_queue = queue.Queue()
 
     try:
         device_info = settings.get("device", {"pi_id": "PI1", "device_name": "unknown"})
@@ -68,6 +70,8 @@ if __name__ == "__main__":
                     run_lcd(sensor_name, sensor_cfg, threads, stop_event, lcd_queue, publisher)
                 case "BTN":
                     run_button(sensor_name, sensor_cfg, threads, stop_event, btn_queue, publisher)
+                case "BRGB":
+                    run_rgb(sensor_name, sensor_cfg, threads, stop_event, rgb_queue, publisher)
                 case _:
                     pass 
 
@@ -84,8 +88,10 @@ if __name__ == "__main__":
                     display_queue.put(user_input)
                 elif user_input.startswith("lcd "):
                     lcd_queue.put(user_input)
-                elif user_input.startswith("press"):  # Button simulator command
-                    btn_queue.put(user_input)  # e.g., "press"
+                elif user_input.startswith("press"):
+                    btn_queue.put(user_input)
+                elif user_input.startswith("rgb "):
+                    rgb_queue.put(user_input)
                 time.sleep(1)
             except KeyboardInterrupt:
                 print('Stopping app')
