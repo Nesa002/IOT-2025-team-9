@@ -35,5 +35,10 @@
             "blue": 19
         },
         "default_color": "white"
+    },
+    "IR": {
+        "simulated": true,
+        "pin": 17,
+        "topic": "iot/sensors/ir"
     }
 }

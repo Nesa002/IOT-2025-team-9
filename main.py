@@ -14,6 +14,7 @@ from components.four_segment import run_display
 from components.lcd import run_lcd
 from components.btn import run_button
 from components.rgb import run_rgb
+from components.ir import run_ir
 
 import os
 import time
@@ -72,6 +73,8 @@ if __name__ == "__main__":
                     run_button(sensor_name, sensor_cfg, threads, stop_event, btn_queue, publisher)
                 case "BRGB":
                     run_rgb(sensor_name, sensor_cfg, threads, stop_event, rgb_queue, publisher)
+                case "IR":
+                    run_ir(sensor_name, sensor_cfg, threads, stop_event, publisher)
                 case _:
                     pass 
 
