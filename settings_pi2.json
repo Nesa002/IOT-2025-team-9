@@ -1,0 +1,29 @@
+{
+    "device": {
+        "pi_id": "PI2",
+        "device_name": "iot-edge-02",
+        "location": "Gajba"
+    },
+    "DPIR2": {
+        "simulated": true,
+        "pin": 21,
+        "topic": "iot/sensors/pir2"
+    },
+    "DUS2": {
+        "simulated": true,
+        "trig_pin": 13,
+        "echo_pin": 12,
+        "topic": "iot/sensors/uds2"
+    },
+    "DS2": {
+        "simulated": true,
+        "pin": 35,
+        "topic": "iot/sensors/ds2"
+    },
+    "DHT3": {
+        "simulated": true,
+        "pin": 11,
+        "humidity_topic": "iot/sensors/dht3/humidity",
+        "temperature_topic": "iot/sensors/dht3/temperature"
+    }
+}

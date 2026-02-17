@@ -1,9 +1,4 @@
 {
-    "device": {
-        "pi_id": "PI1",
-        "device_name": "iot-edge-01",
-        "location": "Gajba"
-    },
     "mqtt": {
         "host": "localhost",
         "port": 1883,
@@ -14,12 +9,18 @@
         "qos": 1,
         "retain": false,
         "topics": {
-            "DPIR1": "iot/sensors/pir",
-            "DUS1": "iot/sensors/uds",
+            "DPIR1": "iot/sensors/pir1",
+            "DPIR3": "iot/sensors/pir3",
+            "DUS1": "iot/sensors/uds1",
             "DMS": "iot/sensors/dms",
-            "DS": "iot/sensors/ds",
+            "DS1": "iot/sensors/ds1",
             "DL": "iot/sensors/dl",
-            "DB": "iot/sensors/db"
+            "DB": "iot/sensors/db",
+            "DHT3_humidity": "iot/sensors/dht3/humidity",
+            "DHT3_temperature": "iot/sensors/dht3/temperature",
+            "DPIR2": "iot/sensors/pir2",
+            "DUS2": "iot/sensors/uds2",
+            "DS2": "iot/sensors/ds2"
         }
     },
     "influxdb": {
@@ -27,36 +28,5 @@
         "token": "G6eMjZdaBn0jLMV7D_cTJvmu9wFMRAIMiaQg5qaZbqBEL4bZGKgcL8zqRtjUJRMk7QrfXjepFQx3nsBoXp280w==",
         "org": "iot",
         "bucket": "sensors"
-    },
-    "DPIR1": {
-        "simulated": true,
-        "pin": 19,
-        "topic": "iot/sensors/pir"
-    },
-    "DUS1": {
-        "simulated": true,
-        "trig_pin": 16,
-        "echo_pin": 15,
-        "topic": "iot/sensors/uds"
-    },
-    "DB": {
-        "simulated": true,
-        "pin": 29,
-        "topic": "iot/sensors/db"
-    },
-    "DMS": {
-        "simulated": true,
-        "pins": [22, 24, 26, 28, 32, 36, 38, 40],
-        "topic": "iot/sensors/dms"
-    },
-    "DS": {
-        "simulated": true,
-        "pin": 37,
-        "topic": "iot/sensors/ds"
-    },
-    "DL": {
-        "simulated": true,
-        "pin": 31,
-        "topic": "iot/sensors/dl"
     }
 }

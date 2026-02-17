@@ -9,7 +9,9 @@ from mqtt_publisher import MqttBatchPublisher
 from components.pir import run_pir
 from components.uds import run_uds
 from components.db import run_buzzer
+from components.dht import run_dht
 
+import os
 import time
 
 try:
@@ -20,7 +22,12 @@ except:
 
 if __name__ == "__main__":
     print('Starting app')
-    settings = load_settings()
+
+    pi_id = os.getenv("PI_ID", "PI1").upper()
+    settings_file = f"settings_{pi_id.lower()}.json"
+    print(f"Loading settings for {pi_id} from {settings_file}")
+
+    settings = load_settings(settings_file)
     threads = []
     stop_event = threading.Event()
 
@@ -29,37 +36,28 @@ if __name__ == "__main__":
     db_queue = queue.Queue()
 
     try:
-
-
-        dpir1_setting = settings['DPIR1']
-
-        dus1_settings = settings['DUS1']
-
-        db_setting = settings['DB']
-
-        dms_setting=settings['DMS']
-
-        ds_setting=settings['DS']
-
-        dl_setting=settings['DL']
-
-
         device_info = settings.get("device", {"pi_id": "PI1", "device_name": "unknown"})
         publisher = MqttBatchPublisher(settings.get("mqtt", {}), device_info, stop_event)
         publisher.start()
 
-        run_pir('DPIR1', dpir1_setting, threads, stop_event, publisher)
-
-        run_uds('DUS1', dus1_settings, threads, stop_event, publisher)
-
-        run_buzzer(db_setting, threads, stop_event, db_queue, publisher)
-
-        run_dms("DMS", dms_setting, threads, stop_event, dms_queue, publisher)
-
-        run_ds("DS", ds_setting, threads, stop_event, publisher)
-
-        run_dl("DL", dl_setting, threads, stop_event, dl_queue, publisher)
-
+        for sensor_name, sensor_cfg in settings.items():
+            match sensor_name:
+                case "DPIR1" | "DPIR2" | "DPIR3":
+                    run_pir(sensor_name, sensor_cfg, threads, stop_event, publisher)
+                case "DUS1" | "DUS2":
+                    run_uds(sensor_name, sensor_cfg, threads, stop_event, publisher)
+                case "DS1" | "DS2":
+                    run_ds(sensor_name, sensor_cfg, threads, stop_event, publisher)
+                case "DMS":
+                    run_dms(sensor_name, sensor_cfg, threads, stop_event, dms_queue, publisher)
+                case "DB":
+                    run_buzzer(sensor_cfg, threads, stop_event, db_queue, publisher)
+                case "DL":
+                    run_dl(sensor_name, sensor_cfg, threads, stop_event, dl_queue, publisher)
+                case "DHT1" | "DHT2" | "DHT3":
+                    run_dht(sensor_name, sensor_cfg, threads, stop_event, publisher)
+                case _:
+                    pass 
 
         while True:
             try:
