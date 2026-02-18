@@ -36,5 +36,11 @@
         "simulated": true,
         "pin": 16,
         "topic": "iot/sensors/btn"
+    },
+    "GYRO": {
+        "simulated": true,
+        "i2c_bus": 1,
+        "address": 68,
+        "topic": "iot/sensors/gyro"
     }
 }

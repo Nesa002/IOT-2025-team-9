@@ -14,6 +14,8 @@ from components.four_segment import run_display
 from components.lcd import run_lcd
 from components.btn import run_button
 from components.rgb import run_rgb
+from components.gyro import run_gyro
+
 
 import os
 import time
@@ -27,7 +29,7 @@ except:
 if __name__ == "__main__":
     print('Starting app')
 
-    pi_id = os.getenv("PI_ID", "PI1").upper()
+    pi_id = os.getenv("PI_ID", "PI2").upper()
     settings_file = f"settings_{pi_id.lower()}.json"
     print(f"Loading settings for {pi_id} from {settings_file}")
 
@@ -42,6 +44,8 @@ if __name__ == "__main__":
     lcd_queue = queue.Queue()
     btn_queue = queue.Queue()
     rgb_queue = queue.Queue()
+    gyro_queue = queue.Queue()
+
 
     try:
         device_info = settings.get("device", {"pi_id": "PI1", "device_name": "unknown"})
@@ -72,6 +76,8 @@ if __name__ == "__main__":
                     run_button(sensor_name, sensor_cfg, threads, stop_event, btn_queue, publisher)
                 case "BRGB":
                     run_rgb(sensor_name, sensor_cfg, threads, stop_event, rgb_queue, publisher)
+                case "GYRO":
+                    run_gyro(sensor_name, sensor_cfg, threads, stop_event, gyro_queue, publisher)
                 case _:
                     pass 
 
@@ -92,6 +98,8 @@ if __name__ == "__main__":
                     btn_queue.put(user_input)
                 elif user_input.startswith("rgb "):
                     rgb_queue.put(user_input)
+                elif user_input.startswith("gyro "):
+                    gyro_queue.put(user_input[len("gyro "):])
                 time.sleep(1)
             except KeyboardInterrupt:
                 print('Stopping app')
