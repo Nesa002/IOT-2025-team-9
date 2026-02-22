@@ -61,15 +61,14 @@ class LogicController:
             )
 
     def _set_alarm(self, active, reason="unknown"):
-        with self.lock:
-            if self.alarm_active == active:
-                return
-            self.alarm_active = active
-            if active:
-                self.queues["db"].put("buzz")
-            else:
-                self.security_armed = False
-                self.pending_intrusion_at = None
+        if self.alarm_active == active:
+            return
+        self.alarm_active = active
+        if active:
+            self.queues["db"].put("buzz")
+        else:
+            self.security_armed = False
+            self.pending_intrusion_at = None
         state = "entered" if active else "cleared"
         self._emit_logic_event("ALARM", state, {"reason": reason})
 
@@ -172,7 +171,6 @@ class LogicController:
     def _update_occupancy_from_motion(self, pir_name):
         sensor = "DUS1" if pir_name == "DPIR1" else "DUS2"
         history = self.uds_history.get(sensor, deque())
-        print(f"\n\n{history}\n\n")
         if len(history) < 2:
             return
         count = min(3, len(history))   # don’t over-pop
@@ -182,7 +180,6 @@ class LogicController:
         delta = recent[-1] - recent[0]
         entering = delta < 0
         self.occupancy = max(0, self.occupancy + (1 if entering else -1))
-        print(f"Number of people: {self.occupancy}")
         self._emit_logic_event("OCCUPANCY", self.occupancy, {"trigger": pir_name, "direction": "in" if entering else "out"})
 
     def _tick_loop(self):
@@ -192,6 +189,7 @@ class LogicController:
             with self.lock:
                 for ds_name, opened_at in self.door_open_since.items():
                     if opened_at and now - opened_at >= 5:
+                        print(now - opened_at)
                         self._set_alarm(True, f"{ds_name}_unlocked")
 
                 if self.pending_arm_at and now >= self.pending_arm_at:

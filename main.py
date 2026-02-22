@@ -30,7 +30,7 @@ except:
 if __name__ == "__main__":
     print('Starting app')
 
-    pi_id = os.getenv("PI_ID", "PI2").upper()
+    pi_id = os.getenv("PI_ID", "PI1").upper()
     settings_file = f"settings_{pi_id.lower()}.json"
     print(f"Loading settings for {pi_id} from {settings_file}")
 
