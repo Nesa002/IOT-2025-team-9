@@ -3,7 +3,7 @@ import time
 from sensors.btn import Button, run_button_loop
 from simulators.btn import run_button_simulator
 
-def button_callback(name, publisher=None, settings=None):
+def button_callback(name, publisher=None, settings=None, event_handler=None):
     t = time.localtime()
     print("="*20)
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
@@ -16,8 +16,10 @@ def button_callback(name, publisher=None, settings=None):
             simulated=settings.get("simulated", True),
             topic=settings.get("topic"),
         )
+    if event_handler:
+        event_handler(name, "pressed")
 
-def run_button(name, settings, threads, stop_event, btn_queue=None, publisher=None):
+def run_button(name, settings, threads, stop_event, btn_queue=None, publisher=None, event_handler=None):
     """
     Runs the Button either in simulation mode or real hardware mode.
     """
@@ -25,7 +27,7 @@ def run_button(name, settings, threads, stop_event, btn_queue=None, publisher=No
         print(f"Starting {name} simulator")
         button_thread = threading.Thread(
             target=run_button_simulator,
-            args=(lambda: button_callback(name, publisher, settings), stop_event, btn_queue),
+            args=(lambda: button_callback(name, publisher, settings, event_handler), stop_event, btn_queue),
             daemon=True
         )
         button_thread.start()
@@ -36,7 +38,7 @@ def run_button(name, settings, threads, stop_event, btn_queue=None, publisher=No
         button = Button(pin=settings["pin"], simulated=False)
         button_thread = threading.Thread(
             target=run_button_loop,
-            args=(button, stop_event, lambda: button_callback(name, publisher, settings)),
+            args=(button, stop_event, lambda: button_callback(name, publisher, settings, event_handler)),
             daemon=True
         )
         button_thread.start()

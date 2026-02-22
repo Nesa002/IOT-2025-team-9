@@ -3,7 +3,7 @@ import threading
 from sensors.dht import run_dht_loop, DHT
 from simulators.dht import run_dht_simulator
 
-def dht_callback(name, humidity, temperature, publisher=None, settings=None):
+def dht_callback(name, humidity, temperature, publisher=None, settings=None, event_handler=None):
     t = time.localtime()
     print("="*20)
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
@@ -25,14 +25,16 @@ def dht_callback(name, humidity, temperature, publisher=None, settings=None):
             simulated=settings.get("simulated", True),
             topic=settings.get("temperature_topic"),
         )
+    if event_handler:
+        event_handler(name, {"humidity": humidity, "temperature": temperature})
 
 
-def run_dht(name, settings, threads, stop_event, publisher=None):
+def run_dht(name, settings, threads, stop_event, publisher=None, event_handler=None):
     if settings['simulated']:
         print(f"Starting {name} simulator")
         dht_thread = threading.Thread(
             target=run_dht_simulator,
-            args=(2, lambda h, temp: dht_callback(name, h, temp, publisher, settings), stop_event)
+            args=(2, lambda h, temp: dht_callback(name, h, temp, publisher, settings, event_handler), stop_event)
         )
         dht_thread.start()
         threads.append(dht_thread)
@@ -42,7 +44,7 @@ def run_dht(name, settings, threads, stop_event, publisher=None):
         dht = DHT(settings['pin'])
         dht_thread = threading.Thread(
             target=run_dht_loop,
-            args=(dht, 2, lambda h, temp: dht_callback(name, h, temp, publisher, settings), stop_event)
+            args=(dht, 2, lambda h, temp: dht_callback(name, h, temp, publisher, settings, event_handler), stop_event)
         )
         dht_thread.start()
         threads.append(dht_thread)

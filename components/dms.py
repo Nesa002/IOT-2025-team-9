@@ -3,7 +3,7 @@ import time
 from simulators.dms import run_dms_simulator
 from sensors.dms import run_dms_loop, DMS
 
-def dms_callback(name, event, publisher, settings):
+def dms_callback(name, event, publisher, settings, event_handler=None):
     t = time.localtime()
     print("="*20)
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
@@ -16,13 +16,15 @@ def dms_callback(name, event, publisher, settings):
             simulated=settings["simulated"],
             topic=settings.get("topic"),
         )
+    if event_handler:
+        event_handler(name, event)
 
-def run_dms(name, settings, threads, stop_event, dms_queue, publisher=None):
+def run_dms(name, settings, threads, stop_event, dms_queue, publisher=None, event_handler=None):
     if settings['simulated']:
         print("Starting DMS simulator")
         dms_thread = threading.Thread(
             target=run_dms_simulator,
-            args=(lambda event: dms_callback(name, event, publisher, settings), stop_event, dms_queue),
+            args=(lambda event: dms_callback(name, event, publisher, settings, event_handler), stop_event, dms_queue),
         )
         dms_thread.start()
         threads.append(dms_thread)
@@ -32,7 +34,7 @@ def run_dms(name, settings, threads, stop_event, dms_queue, publisher=None):
         dms = DMS(settings['pins'])
         dms_thread = threading.Thread(
             target=run_dms_loop,
-            args=(dms, lambda event: dms_callback(name, event, publisher, settings), stop_event),
+            args=(dms, lambda event: dms_callback(name, event, publisher, settings, event_handler), stop_event),
         )
         dms_thread.start()
         threads.append(dms_thread)

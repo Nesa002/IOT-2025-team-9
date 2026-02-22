@@ -4,7 +4,7 @@ from simulators.ds import run_ds_simulator
 from sensors.ds import run_ds_loop, DS
 
 
-def ds_callback(name, event, publisher, settings):
+def ds_callback(name, event, publisher, settings, event_handler=None):
 
     t = time.localtime()
     print("=" * 20)
@@ -18,14 +18,16 @@ def ds_callback(name, event, publisher, settings):
             simulated=settings["simulated"],
             topic=settings.get("topic"),
         )
+    if event_handler:
+        event_handler(name, event)
 
 
-def run_ds(name, settings, threads, stop_event, publisher=None):
+def run_ds(name, settings, threads, stop_event, publisher=None, event_handler=None):
 
     if settings['simulated']:
         print("Starting DS simulator")
         ds_thread = threading.Thread(target=run_ds_simulator,
-                                     args=(2, lambda event: ds_callback(name, event, publisher, settings), stop_event))
+                                     args=(2, lambda event: ds_callback(name, event, publisher, settings, event_handler), stop_event))
         ds_thread.start()
         threads.append(ds_thread)
         print("DS simulator started")
@@ -34,7 +36,7 @@ def run_ds(name, settings, threads, stop_event, publisher=None):
         ds = DS(settings['pin'])
         ds_thread = threading.Thread(
             target=run_ds_loop,
-            args=(ds, lambda event: ds_callback(name, event, publisher, settings), stop_event),
+            args=(ds, lambda event: ds_callback(name, event, publisher, settings, event_handler), stop_event),
         )
         ds_thread.start()
         threads.append(ds_thread)
