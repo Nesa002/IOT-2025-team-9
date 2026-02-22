@@ -171,19 +171,18 @@ class LogicController:
 
     def _update_occupancy_from_motion(self, pir_name):
         sensor = "DUS1" if pir_name == "DPIR1" else "DUS2"
-        history = list(self.uds_history.get(sensor, []))
+        history = self.uds_history.get(sensor, deque())
+        print(f"\n\n{history}\n\n")
         if len(history) < 2:
             return
-        recent = [d for ts, d in history if time.time() - ts <= 6]
+        count = min(3, len(history))   # don’t over-pop
+        recent = [history.popleft()[1] for _ in range(count)]
         if len(recent) < 2:
             return
         delta = recent[-1] - recent[0]
-        if abs(delta) < 8:
-            return
         entering = delta < 0
-        if sensor == "DUS2":
-            entering = not entering
         self.occupancy = max(0, self.occupancy + (1 if entering else -1))
+        print(f"Number of people: {self.occupancy}")
         self._emit_logic_event("OCCUPANCY", self.occupancy, {"trigger": pir_name, "direction": "in" if entering else "out"})
 
     def _tick_loop(self):
