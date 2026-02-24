@@ -51,6 +51,7 @@ class LogicController:
         self.command_thread.start()
 
     def _emit_logic_event(self, name, value, tags=None):
+        return
         if self.publisher:
             self.publisher.enqueue_reading(
                 sensor_type="LOGIC",
@@ -242,7 +243,7 @@ class LogicController:
         shown = self.timer_remaining if self.timer_visible else 0
         minutes = shown // 60
         seconds = shown % 60
-        #self._send_mqtt_message("PI2", "4SD", f"disp {minutes:02d}:{seconds:02d}")
+        # self._send_mqtt_message("PI2", "4SD", f"disp {minutes:02d}:{seconds:02d}")
        # self.queues["display"].put(f"disp {minutes:02d}:{seconds:02d}")
 
     def _rotate_lcd(self, now):

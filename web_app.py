@@ -1,10 +1,8 @@
 import os
-
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request, Response
 from influxdb_client import InfluxDBClient
-
 from settings import load_settings
-
+import requests  # make sure you have requests installed
 
 def create_app(settings_path=None):
     settings = load_settings(settings_path or "settings.json")
@@ -66,6 +64,26 @@ def create_app(settings_path=None):
 
         return jsonify({"states": sorted(latest.values(), key=lambda item: item["sensor"])})
 
+    @app.route("/proxy/grafana/<path:path>")
+    def proxy_grafana(path):
+        params = request.args.to_dict()
+        target_url = f"{grafana_url}/{path}"
+
+        r = requests.get(target_url, params=params, stream=True)
+        
+        # Build a Flask response using a generator
+        def generate():
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    yield chunk
+
+        resp = Response(generate(), status=r.status_code, content_type=r.headers.get('content-type'))
+        
+        # Copy headers except X-Frame-Options and Transfer-Encoding
+        for k, v in r.headers.items():
+            if k.lower() not in ["x-frame-options", "transfer-encoding", "content-encoding", "content-length"]:
+                resp.headers[k] = v
+        return resp
 
     return app
 

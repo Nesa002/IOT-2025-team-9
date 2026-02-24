@@ -66,33 +66,32 @@ if __name__ == "__main__":
         controller.start()
 
         for sensor_name, sensor_cfg in settings.items():
-            match sensor_name:
-                case "DPIR1" | "DPIR2" | "DPIR3":
-                    run_pir(sensor_name, sensor_cfg, threads, stop_event, publisher)
-                case "DUS1" | "DUS2":
-                    run_uds(sensor_name, sensor_cfg, threads, stop_event, publisher)
-                case "DS1" | "DS2":
-                    run_ds(sensor_name, sensor_cfg, threads, stop_event, publisher)
-                case "DMS":
-                    run_dms(sensor_name, sensor_cfg, threads, stop_event, dms_queue, publisher)
-                case "DB":
-                    run_buzzer(sensor_cfg, threads, stop_event, db_queue, publisher)
-                case "DL":
-                    run_dl(sensor_name, sensor_cfg, threads, stop_event, dl_queue, publisher)
-                case "DHT1" | "DHT2" | "DHT3":
-                    run_dht(sensor_name, sensor_cfg, threads, stop_event, publisher)
-                case "4SD":
-                    run_display(sensor_name, sensor_cfg, threads, stop_event, display_queue, publisher)
-                case "LCD":
-                    run_lcd(sensor_name, sensor_cfg, threads, stop_event, lcd_queue, publisher)
-                case "BTN":
-                    run_button(sensor_name, sensor_cfg, threads, stop_event, btn_queue, publisher)
-                case "BRGB":
-                    run_rgb(sensor_name, sensor_cfg, threads, stop_event, rgb_queue, publisher)
-                case "GYRO":
-                    run_gyro(sensor_name, sensor_cfg, threads, stop_event, gyro_queue, publisher)
-                case _:
-                    pass 
+            if sensor_name in ("DPIR1", "DPIR2", "DPIR3"):
+                run_pir(sensor_name, sensor_cfg, threads, stop_event, publisher)
+            elif sensor_name in ("DUS1", "DUS2"):
+                run_uds(sensor_name, sensor_cfg, threads, stop_event, publisher)
+            elif sensor_name in ("DS1", "DS2"):
+                run_ds(sensor_name, sensor_cfg, threads, stop_event, publisher)
+            elif sensor_name == "DMS":
+                run_dms(sensor_name, sensor_cfg, threads, stop_event, dms_queue, publisher)
+            elif sensor_name == "DB":
+                run_buzzer(sensor_cfg, threads, stop_event, db_queue, publisher)
+            elif sensor_name == "DL":
+                run_dl(sensor_name, sensor_cfg, threads, stop_event, dl_queue, publisher)
+            elif sensor_name in ("DHT1", "DHT2", "DHT3"):
+                run_dht(sensor_name, sensor_cfg, threads, stop_event, publisher)
+            elif sensor_name == "4SD":
+                run_display(sensor_name, sensor_cfg, threads, stop_event, display_queue, publisher)
+            elif sensor_name == "LCD":
+                run_lcd(sensor_name, sensor_cfg, threads, stop_event, lcd_queue, publisher)
+            elif sensor_name == "BTN":
+                run_button(sensor_name, sensor_cfg, threads, stop_event, btn_queue, publisher)
+            elif sensor_name == "BRGB":
+                run_rgb(sensor_name, sensor_cfg, threads, stop_event, rgb_queue, publisher)
+            elif sensor_name == "GYRO":
+                run_gyro(sensor_name, sensor_cfg, threads, stop_event, gyro_queue, publisher)
+            else:
+                pass
 
         while True:
             try:

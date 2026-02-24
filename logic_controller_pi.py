@@ -17,14 +17,11 @@ class LogicControllerPi:
         topic = mqtt_settings.get("default_topic", "iot/pi")
         client_id = mqtt_settings.get("client_id", "mqtt-influx")
 
-        # ✅ Use new callback API
         self.client = mqtt.Client(
             client_id=client_id,
             callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
         )
 
-
-        # ✅ Subscribe in on_connect (handles reconnects)
         self.client.on_connect = lambda c, u, f, rc, p=None: self._on_connect(c, u, f, rc, topic)
         self.client.on_message = self.on_message
         self.client.on_disconnect = self.on_disconnect
