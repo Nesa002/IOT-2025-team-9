@@ -59,13 +59,7 @@ def create_app(settings_path=None):
         settings=settings,
         stop_event=stop_event,
         publisher=publisher,
-        queues={
-            "dl": queue.Queue(),
-            "db": queue.Queue(),
-            "display": queue.Queue(),
-            "lcd": queue.Queue(),
-            "rgb": queue.Queue(),
-        },
+
     )
     controller.start()
 

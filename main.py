@@ -4,6 +4,7 @@ import queue
 from components.dl import run_dl
 from components.dms import run_dms
 from components.ds import run_ds
+from logic_controller_pi import LogicControllerPi
 from settings import load_settings
 from mqtt_publisher import MqttBatchPublisher
 from components.pir import run_pir
@@ -53,16 +54,14 @@ if __name__ == "__main__":
         publisher = MqttBatchPublisher(settings.get("mqtt", {}), device_info, stop_event)
         publisher.start()
 
-        controller = LogicController(
-            settings=settings,
-            stop_event=stop_event,
-            publisher=publisher,
+        controller = LogicControllerPi(
+            this_pi=setting.get("device",{}).get("pi_id","PI1"),
             queues={
-                "dl": dl_queue,
-                "db": db_queue,
-                "display": display_queue,
-                "lcd": lcd_queue,
-                "rgb": rgb_queue,
+                "dl": queue.Queue(),
+                "db": queue.Queue(),
+                "display": queue.Queue(),
+                "lcd": queue.Queue(),
+                "rgb": queue.Queue(),
             },
         )
         controller.start()
