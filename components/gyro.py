@@ -5,7 +5,7 @@ from sensors.gyro.gyro import Gyro, run_gyro_loop
 from simulators.gyro import run_gyro_simulator
 
 
-def gyro_callback(name, reading, publisher=None, settings=None):
+def gyro_callback(name, reading, publisher=None, settings=None, event_handler=None):
     t = time.localtime()
     print("=" * 20)
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
@@ -19,9 +19,11 @@ def gyro_callback(name, reading, publisher=None, settings=None):
             simulated=settings.get("simulated", True),
             topic=settings.get("topic"),
         )
+    if event_handler:
+        event_handler(name, reading)
 
 
-def run_gyro(name, settings, threads, stop_event, gyro_queue=None, publisher=None):
+def run_gyro(name, settings, threads, stop_event, gyro_queue=None, publisher=None, event_handler=None):
     if settings.get("simulated", True):
         print(f"Starting {name} gyro simulator")
         gyro_thread = threading.Thread(
@@ -29,7 +31,7 @@ def run_gyro(name, settings, threads, stop_event, gyro_queue=None, publisher=Non
             args=(
                 stop_event,
                 gyro_queue,
-                lambda reading: gyro_callback(name, reading, publisher, settings),
+                lambda reading: gyro_callback(name, reading, publisher, settings, event_handler),
                 settings,
             ),
             daemon=True,
@@ -52,7 +54,7 @@ def run_gyro(name, settings, threads, stop_event, gyro_queue=None, publisher=Non
 
         gyro_thread = threading.Thread(
             target=run_gyro_loop,
-            args=(gyro, stop_event, lambda reading: gyro_callback(name, reading, publisher, settings)),
+            args=(gyro, stop_event, lambda reading: gyro_callback(name, reading, publisher, settings, event_handler)),
             kwargs={"interval": interval},
             daemon=True,
         )

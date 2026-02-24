@@ -1,4 +1,5 @@
 import json
+import os
 import queue
 import threading
 from datetime import datetime
@@ -54,9 +55,9 @@ def create_app(settings_path=None):
     stop_event = threading.Event()
 
     influx_client = InfluxDBClient(
-        url=influx_settings.get("url"),
-        token=influx_settings.get("token"),
-        org=influx_settings.get("org"),
+        url=os.getenv("INFLUX_URL", influx_settings.get("url")),
+        token=os.getenv("INFLUX_TOKEN", influx_settings.get("token")),
+        org=os.getenv("INFLUX_ORG", influx_settings.get("org")),
     )
     write_api = influx_client.write_api()
 
@@ -68,8 +69,8 @@ def create_app(settings_path=None):
                 continue
             point = _coerce_point(reading)
             write_api.write(
-                bucket=influx_settings.get("bucket"),
-                org=influx_settings.get("org"),
+                bucket=os.getenv("INFLUX_BUCKET", influx_settings.get("bucket")),
+                org=os.getenv("INFLUX_ORG", influx_settings.get("org")),
                 record=point,
             )
 
@@ -91,7 +92,10 @@ def create_app(settings_path=None):
     if mqtt_settings.get("username"):
         mqtt_client.username_pw_set(mqtt_settings.get("username"), mqtt_settings.get("password"))
     mqtt_client.on_message = on_message
-    mqtt_client.connect(mqtt_settings.get("host", "localhost"), mqtt_settings.get("port", 1883))
+    mqtt_client.connect(
+        os.getenv("MQTT_HOST", mqtt_settings.get("host", "localhost")),
+        int(os.getenv("MQTT_PORT", mqtt_settings.get("port", 1883))),
+    )
     mqtt_client.subscribe(mqtt_settings.get("default_topic", "iot/sensors"))
     for topic in mqtt_settings.get("topics", {}).values():
         mqtt_client.subscribe(topic)
@@ -101,12 +105,6 @@ def create_app(settings_path=None):
     def health():
         return jsonify({"status": "ok"})
 
-    @app.teardown_appcontext
-    def shutdown(_exception=None):
-        stop_event.set()
-        mqtt_client.loop_stop()
-        mqtt_client.disconnect()
-        influx_client.close()
 
     return app
 

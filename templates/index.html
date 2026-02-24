@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IoT Monitoring</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+    <main class="layout">
+        <section>
+            <h1>Trenutno stanje elemenata sistema</h1>
+            <p class="hint">Podaci se osvežavaju svakih 10 sekundi.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Senzor</th>
+                        <th>Tip</th>
+                        <th>Vrednost / Stanje</th>
+                        <th>Uređaj</th>
+                        <th>PI ID</th>
+                        <th>Vreme</th>
+                    </tr>
+                </thead>
+                <tbody id="states-body"></tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Grafana vizuelizacija</h2>
+            {% if dashboard_uid %}
+            <iframe
+                title="Grafana dashboard"
+                src="{{ grafana_url }}/d-solo/{{ dashboard_uid }}?orgId=1&from=now-6h&to=now&theme=light&panelId=1"
+                loading="lazy"
+            ></iframe>
+            {% else %}
+            <div class="empty">Postavite grafana.dashboard_uid u settings.json da biste prikazali ugrađeni panel.</div>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        const body = document.getElementById('states-body');
+
+        function renderRows(states) {
+            body.innerHTML = '';
+            states.forEach((item) => {
+                const value = item.value ?? item.state ?? 'N/A';
+                const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString() : 'N/A';
+                const unit = item.unit ? ` ${item.unit}` : '';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.sensor}</td>
+                    <td>${item.sensor_type}</td>
+                    <td>${value}${unit}</td>
+                    <td>${item.device}</td>
+                    <td>${item.pi_id}</td>
+                    <td>${timestamp}</td>
+                `;
+                body.appendChild(row);
+            });
+        }
+
+        async function loadStates() {
+            try {
+                const response = await fetch('/api/states');
+                const data = await response.json();
+                renderRows(data.states || []);
+            } catch (error) {
+                console.error('Greška pri učitavanju stanja:', error);
+            }
+        }
+
+        loadStates();
+        setInterval(loadStates, 10000);
+    </script>
+</body>
+</html>

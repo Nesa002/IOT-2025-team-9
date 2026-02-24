@@ -15,6 +15,7 @@ from components.lcd import run_lcd
 from components.btn import run_button
 from components.rgb import run_rgb
 from components.gyro import run_gyro
+from logic_controller import LogicController
 
 
 import os
@@ -52,32 +53,46 @@ if __name__ == "__main__":
         publisher = MqttBatchPublisher(settings.get("mqtt", {}), device_info, stop_event)
         publisher.start()
 
+        controller = LogicController(
+            settings=settings,
+            stop_event=stop_event,
+            publisher=publisher,
+            queues={
+                "dl": dl_queue,
+                "db": db_queue,
+                "display": display_queue,
+                "lcd": lcd_queue,
+                "rgb": rgb_queue,
+            },
+        )
+        controller.start()
+
         for sensor_name, sensor_cfg in settings.items():
             match sensor_name:
                 case "DPIR1" | "DPIR2" | "DPIR3":
-                    run_pir(sensor_name, sensor_cfg, threads, stop_event, publisher)
+                    run_pir(sensor_name, sensor_cfg, threads, stop_event, publisher, controller.handle_sensor_event)
                 case "DUS1" | "DUS2":
-                    run_uds(sensor_name, sensor_cfg, threads, stop_event, publisher)
+                    run_uds(sensor_name, sensor_cfg, threads, stop_event, publisher, controller.handle_sensor_event)
                 case "DS1" | "DS2":
-                    run_ds(sensor_name, sensor_cfg, threads, stop_event, publisher)
+                    run_ds(sensor_name, sensor_cfg, threads, stop_event, publisher, controller.handle_sensor_event)
                 case "DMS":
-                    run_dms(sensor_name, sensor_cfg, threads, stop_event, dms_queue, publisher)
+                    run_dms(sensor_name, sensor_cfg, threads, stop_event, dms_queue, publisher, controller.handle_sensor_event)
                 case "DB":
                     run_buzzer(sensor_cfg, threads, stop_event, db_queue, publisher)
                 case "DL":
                     run_dl(sensor_name, sensor_cfg, threads, stop_event, dl_queue, publisher)
                 case "DHT1" | "DHT2" | "DHT3":
-                    run_dht(sensor_name, sensor_cfg, threads, stop_event, publisher)
+                    run_dht(sensor_name, sensor_cfg, threads, stop_event, publisher, controller.handle_sensor_event)
                 case "4SD":
                     run_display(sensor_name, sensor_cfg, threads, stop_event, display_queue, publisher)
                 case "LCD":
                     run_lcd(sensor_name, sensor_cfg, threads, stop_event, lcd_queue, publisher)
                 case "BTN":
-                    run_button(sensor_name, sensor_cfg, threads, stop_event, btn_queue, publisher)
+                    run_button(sensor_name, sensor_cfg, threads, stop_event, btn_queue, publisher, controller.handle_sensor_event)
                 case "BRGB":
                     run_rgb(sensor_name, sensor_cfg, threads, stop_event, rgb_queue, publisher)
                 case "GYRO":
-                    run_gyro(sensor_name, sensor_cfg, threads, stop_event, gyro_queue, publisher)
+                    run_gyro(sensor_name, sensor_cfg, threads, stop_event, gyro_queue, publisher, controller.handle_sensor_event)
                 case _:
                     pass 
 
@@ -100,6 +115,12 @@ if __name__ == "__main__":
                     rgb_queue.put(user_input)
                 elif user_input.startswith("gyro "):
                     gyro_queue.put(user_input[len("gyro "):])
+                elif user_input.startswith("cmd "):
+                    try:
+                        import json
+                        controller.handle_command(json.loads(user_input[4:]))
+                    except Exception as exc:
+                        print(f"Invalid cmd payload: {exc}")
                 time.sleep(1)
             except KeyboardInterrupt:
                 print('Stopping app')
