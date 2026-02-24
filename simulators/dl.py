@@ -6,7 +6,7 @@ def run_dl_simulator(callback, stop_event, dl_queue):
             user_input = dl_queue.get(timeout=1)
             if user_input == "dl on":
                 callback("led_on")
-                time.sleep(5)
+                time.sleep(2)
                 callback("led_off")
         except queue.Empty:
             pass 

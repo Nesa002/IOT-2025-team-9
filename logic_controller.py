@@ -8,11 +8,10 @@ import paho.mqtt.client as mqtt
 
 
 class LogicController:
-    def __init__(self, settings, stop_event, publisher, queues):
+    def __init__(self, settings, stop_event, publisher):
         self.settings = settings
         self.stop_event = stop_event
         self.publisher = publisher
-        self.queues = queues
 
         self.pin_code = str(settings.get("logic", {}).get("pin_code", "1234"))
         self.pin_buffer = ""
@@ -34,14 +33,16 @@ class LogicController:
         self.timer_running = False
         self.timer_blinking = False
         self.timer_visible = True
-        self.timer_add_step = 30
+
+        self.timer_add_step = 10
         self.last_lcd_rotation = 0
         self.last_lcd_index = 0
 
         self.rgb_on = False
         self.rgb_color = "white"
 
-        self.lock = threading.Lock()
+
+        self.lock = threading.RLock()
 
     def start(self):
         self.tick_thread = threading.Thread(target=self._tick_loop, daemon=True)
@@ -61,16 +62,16 @@ class LogicController:
             )
 
     def _set_alarm(self, active, reason="unknown"):
-        print("ALLAAARMMM!!!!")
-        with self.lock:
-            if self.alarm_active == active:
-                return
-            self.alarm_active = active
-            if active:
-                self.queues["db"].put("buzz")
-            else:
-                self.security_armed = False
-                self.pending_intrusion_at = None
+
+        print("ALARM!!!")
+        if self.alarm_active == active:
+            return
+        self.alarm_active = active
+        if active:
+            self.queues["db"].put("buzz")
+        else:
+            self.security_armed = False
+            self.pending_intrusion_at = None
         state = "entered" if active else "cleared"
         self._emit_logic_event("ALARM", state, {"reason": reason})
 
@@ -86,6 +87,8 @@ class LogicController:
             self.pending_intrusion_at = None
             was_alarm = self.alarm_active
             self.security_armed = False
+
+            print("DISARMED")
         if was_alarm:
             self._set_alarm(False, "pin")
         else:
@@ -95,18 +98,10 @@ class LogicController:
         if key == "#":
             self.pin_buffer = ""
             return
+
+        # TODO: enter pin instead of *
         if key == "*":
             self._arm_security()
-            return
-        if key in {"A", "B", "C", "D"}:
-            colors = {"B": "red", "C": "green", "D": "blue"}
-            if key == "A":
-                self.rgb_on = not self.rgb_on
-            else:
-                self.rgb_on = True
-                self.rgb_color = colors[key]
-            self.queues["rgb"].put(f"rgb {self.rgb_color if self.rgb_on else 'off'}")
-            self._emit_logic_event("RGB", f"{self.rgb_on}:{self.rgb_color}")
             return
 
         if key.isdigit():
@@ -117,16 +112,17 @@ class LogicController:
                     self._disarm_by_pin()
                 self.pin_buffer = ""
 
-    def _send_mqtt_message(self, name, event, topic):
+    def _send_mqtt_message(self, pi_id, sensor_name, value):
         self.publisher.enqueue_reading(
-            sensor_type=name,
-            sensor_name=name,
-            value=event,
-            topic=topic
+            pi_id=pi_id,
+            sensor_name=sensor_name,
+            value=value,
+            topic="iot/pi"
         )
 
     def handle_sensor_event(self, name, value):
         print(f"NAME {name}, VALUE {value}")
+
         now = time.time()
         with self.lock:
             if name in self.uds_history:
@@ -137,6 +133,7 @@ class LogicController:
                 return
 
             if name.startswith("DHT"):
+
                 self.latest_dht[name] = value
                 return
 
@@ -144,6 +141,8 @@ class LogicController:
                 if self.timer_blinking:
                     self.timer_blinking = False
                     self.timer_visible = True
+
+                    return
                 self.timer_remaining += self.timer_add_step
                 self.timer_running = True
                 return
@@ -165,34 +164,36 @@ class LogicController:
                 return
 
             if name in ("DPIR1", "DPIR2") and value == "motion_detected":
-                self.queues["dl"].put("dl on")
+                self._send_mqtt_message("PI1","DL","dl on")
+                #self.queues["dl"].put("dl on")
                 self._update_occupancy_from_motion(name)
-                return
 
-            if name in ("DPIR3", "RPIR1", "RPIR2", "RPIR3") and value == "motion_detected":
+
+            if name in ("DPIR1", "DPIR2", "DPIR3") and value == "motion_detected":
+                print(self.occupancy)
                 if self.occupancy == 0:
                     self._set_alarm(True, "perimeter_motion_empty")
                 return
 
             if name == "GYRO" and isinstance(value, dict):
+
+                # TODO: use actual value
                 magnitude = math.sqrt(sum(float(value.get(k, 0)) ** 2 for k in ("gx", "gy", "gz")))
                 if magnitude > 700:
                     self._set_alarm(True, "gsg_movement")
 
     def _update_occupancy_from_motion(self, pir_name):
         sensor = "DUS1" if pir_name == "DPIR1" else "DUS2"
-        history = list(self.uds_history.get(sensor, []))
+
+        history = self.uds_history.get(sensor, deque())
         if len(history) < 2:
             return
-        recent = [d for ts, d in history if time.time() - ts <= 6]
+        count = min(3, len(history))   # don’t over-pop
+        recent = [history.popleft()[1] for _ in range(count)]
         if len(recent) < 2:
             return
         delta = recent[-1] - recent[0]
-        if abs(delta) < 8:
-            return
         entering = delta < 0
-        if sensor == "DUS2":
-            entering = not entering
         self.occupancy = max(0, self.occupancy + (1 if entering else -1))
         self._emit_logic_event("OCCUPANCY", self.occupancy, {"trigger": pir_name, "direction": "in" if entering else "out"})
 
@@ -203,11 +204,15 @@ class LogicController:
             with self.lock:
                 for ds_name, opened_at in self.door_open_since.items():
                     if opened_at and now - opened_at >= 5:
+
+                        print(now - opened_at)
                         self._set_alarm(True, f"{ds_name}_unlocked")
 
                 if self.pending_arm_at and now >= self.pending_arm_at:
                     self.security_armed = True
                     self.pending_arm_at = None
+
+                    print("ARMED!!!")
                     self._emit_logic_event("SECURITY", "armed")
 
                 if self.pending_intrusion_at and now >= self.pending_intrusion_at:
@@ -233,7 +238,8 @@ class LogicController:
         shown = self.timer_remaining if self.timer_visible else 0
         minutes = shown // 60
         seconds = shown % 60
-        self.queues["display"].put(f"disp {minutes:02d}:{seconds:02d}")
+        self._send_mqtt_message("PI2", "4SD", f"disp {minutes:02d}:{seconds:02d}")
+       # self.queues["display"].put(f"disp {minutes:02d}:{seconds:02d}")
 
     def _rotate_lcd(self, now):
         if not self.latest_dht or now - self.last_lcd_rotation < 4:
@@ -243,7 +249,9 @@ class LogicController:
         val = self.latest_dht[name]
         self.last_lcd_index += 1
         self.last_lcd_rotation = now
-        self.queues["lcd"].put(f"lcd {name} T:{val.get('temperature', '?')}C H:{val.get('humidity', '?')}%")
+
+        self._send_mqtt_message("PI3", "LCD", f"lcd {name} T:{val.get('temperature', '?')}C H:{val.get('humidity', '?')}%")
+       # self.queues["lcd"].put(f"lcd {name} T:{val.get('temperature', '?')}C H:{val.get('humidity', '?')}%")
 
     def _command_listener(self):
         mqtt_settings = self.settings.get("mqtt", {})
@@ -287,7 +295,9 @@ class LogicController:
             state = bool(payload.get("on", True))
             self.rgb_on = state
             self.rgb_color = color
-            self.queues["rgb"].put(f"rgb {color if state else 'off'}")
+
+            self._send_mqtt_message("PI3", "BRGB",f"rgb {color if state else 'off'}")
+            #self.queues["rgb"].put(f"rgb {color if state else 'off'}")
         elif action == "pin_entered":
             pin = str(payload.get("pin", ""))
             for digit in pin:
