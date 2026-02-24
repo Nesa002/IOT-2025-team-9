@@ -203,6 +203,7 @@ class LogicController:
     def _tick_loop(self):
         last_timer_tick = time.time()
         while not self.stop_event.is_set():
+
             now = time.time()
             with self.lock:
                 for ds_name, opened_at in self.door_open_since.items():
@@ -241,7 +242,7 @@ class LogicController:
         shown = self.timer_remaining if self.timer_visible else 0
         minutes = shown // 60
         seconds = shown % 60
-        self._send_mqtt_message("PI2", "4SD", f"disp {minutes:02d}:{seconds:02d}")
+        #self._send_mqtt_message("PI2", "4SD", f"disp {minutes:02d}:{seconds:02d}")
        # self.queues["display"].put(f"disp {minutes:02d}:{seconds:02d}")
 
     def _rotate_lcd(self, now):

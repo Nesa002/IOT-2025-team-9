@@ -1,69 +1,89 @@
 import json
-
-import paho.mqtt.client as mqtt
 import os
+import queue
+import paho.mqtt.client as mqtt
 
 class LogicControllerPi:
     def __init__(self, settings, this_pi, queues):
         self.queues = queues
-        self.this_pi = this_pi
+        self.this_pi = str(this_pi) if this_pi is not None else None
         self.settings = settings
+        self.client = None
 
     def start(self):
         mqtt_settings = self.settings.get("mqtt", {})
+        host = os.getenv("MQTT_HOST", mqtt_settings.get("host", "localhost"))
+        port = int(os.getenv("MQTT_PORT", mqtt_settings.get("port", 1883)))
+        topic = mqtt_settings.get("default_topic", "iot/pi")
+        client_id = mqtt_settings.get("client_id", "mqtt-influx")
 
-        mqtt_client = mqtt.Client(client_id=mqtt_settings.get("client_id", "mqtt-influx"))
-        if mqtt_settings.get("username"):
-            mqtt_client.username_pw_set(mqtt_settings.get("username"), mqtt_settings.get("password"))
-
-        mqtt_client.on_message = self.on_message
-        mqtt_client.connect(
-            os.getenv("MQTT_HOST", mqtt_settings.get("host", "localhost")),
-            int(os.getenv("MQTT_PORT", mqtt_settings.get("port", 1883))),
+        # ✅ Use new callback API
+        self.client = mqtt.Client(
+            client_id=client_id,
+            callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
         )
-        mqtt_client.subscribe(mqtt_settings.get("default_topic", "iot/pi"))
 
-        mqtt_client.loop_start()
 
-    def on_message(self, _client, _userdata, msg):
-        print("MQTT RECEIVED:", msg.topic, msg.payload)
+        # ✅ Subscribe in on_connect (handles reconnects)
+        self.client.on_connect = lambda c, u, f, rc, p=None: self._on_connect(c, u, f, rc, topic)
+        self.client.on_message = self.on_message
+        self.client.on_disconnect = self.on_disconnect
+
+        self.client.connect(host, port, keepalive=60)
+        self.client.loop_start()
+
+    def _on_connect(self, client, userdata, flags, reason_code, topic):
+        client.subscribe(topic)
+
+    def on_disconnect(self, client, userdata, disconnect_flags, reason_code, properties=None):
+        pass
+
+
+    def on_message(self, client, userdata, msg):
+        print("[MQTT] RECEIVED:", msg.topic, msg.payload)
+
         try:
-            payload = json.loads(msg.payload.decode("utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError):
+            text = msg.payload.decode("utf-8")
+        except UnicodeDecodeError as e:
+            return
+
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError as e:
             return
 
         if not isinstance(payload, dict):
             return
 
-            # 1️ Check which Pi the message is for
         target_pi = payload.get("pi_id")
-
         if target_pi is None:
-            return  # invalid message
+            return
 
-        if self.this_pi is not None and str(target_pi) != str(self.this_pi):
-            return  # not meant for this Pi
+        if self.this_pi is not None and str(target_pi) != self.this_pi:
+            # Not for this Pi
+            return
 
         sensor_name = payload.get("sensor_name")
-
         if sensor_name is None:
             return
 
-        if(self.this_pi=="PI1"):
+        value = payload.get("value")
 
-            if(sensor_name=="DL"):
+        # --- routing ---
+        if self.this_pi == "PI1":
+            if sensor_name == "DL":
                 self.queues["dl"].put("dl on")
-            if(sensor_name=="DB"):
+            elif sensor_name == "DB":
                 self.queues["db"].put("buzz")
 
-        elif(self.this_pi=="PI2"):
+        elif self.this_pi == "PI2":
+            if sensor_name == "4SD":
+                self.queues["display"].put(value)
 
-            if (sensor_name == "4SD"):
-                self.queues["display"].put(payload.get("value"))
+        elif self.this_pi == "PI3":
+            if sensor_name == "LCD":
+                self.queues["lcd"].put(value)
+            elif sensor_name == "BRGB":
+                self.queues["rgb"].put(value)
 
-        elif(self.this_pi=="PI3"):
-            if (sensor_name == "LCD"):
-                self.queues["lcd"].put(payload.get("value"))
-
-            if (sensor_name == "BRGB"):
-                self.queues["rgb"].put(payload.get("value"))
+        print("[MQTT] processed OK")
