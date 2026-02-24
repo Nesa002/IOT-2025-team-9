@@ -7,6 +7,9 @@ from datetime import datetime
 from flask import Flask, jsonify
 import paho.mqtt.client as mqtt
 from influxdb_client import InfluxDBClient, Point, WritePrecision
+from mqtt_publisher import MqttBatchPublisher
+from logic_controller import LogicController
+
 
 from settings import load_settings
 
@@ -47,12 +50,30 @@ def _coerce_point(reading):
 
 def create_app(settings_path=None):
     settings = load_settings(settings_path or "settings.json")
+    stop_event = threading.Event()
+
+    publisher = MqttBatchPublisher(settings.get("mqtt", {}), None, stop_event)
+    publisher.start()
+
+    controller = LogicController(
+        settings=settings,
+        stop_event=stop_event,
+        publisher=publisher,
+        queues={
+            "dl": queue.Queue(),
+            "db": queue.Queue(),
+            "display": queue.Queue(),
+            "lcd": queue.Queue(),
+            "rgb": queue.Queue(),
+        },
+    )
+    controller.start()
+
     mqtt_settings = settings.get("mqtt", {})
     influx_settings = settings.get("influxdb", {})
 
     app = Flask(__name__)
     write_queue = queue.Queue()
-    stop_event = threading.Event()
 
     influx_client = InfluxDBClient(
         url=os.getenv("INFLUX_URL", influx_settings.get("url")),
@@ -80,13 +101,38 @@ def create_app(settings_path=None):
     def on_message(_client, _userdata, msg):
         try:
             payload = json.loads(msg.payload.decode("utf-8"))
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, UnicodeDecodeError):
             return
+
         readings = payload.get("readings", [])
         if isinstance(readings, dict):
             readings = [readings]
+        if not isinstance(readings, list):
+            return
+
         for reading in readings:
+            if not isinstance(reading, dict):
+                continue
+
             write_queue.put(reading)
+            # Your enqueue_reading(...) produces fields like these:
+            # sensor_type, sensor_name, value, simulated, topic
+            name = (
+                reading.get("sensor_name")
+                or reading.get("sensor_type")
+                or reading.get("name")
+            )
+            value = (
+                reading.get("value")
+                if "value" in reading
+                else reading.get("event")
+            )
+
+            if name is None or value is None:
+                continue
+
+            # Call your handler with extracted parameters
+            controller.handle_sensor_event(name, value)
 
     mqtt_client = mqtt.Client(client_id=mqtt_settings.get("server_client_id", "mqtt-influx"))
     if mqtt_settings.get("username"):

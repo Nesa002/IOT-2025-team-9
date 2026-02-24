@@ -61,6 +61,7 @@ class LogicController:
             )
 
     def _set_alarm(self, active, reason="unknown"):
+        print("ALLAAARMMM!!!!")
         with self.lock:
             if self.alarm_active == active:
                 return
@@ -116,7 +117,16 @@ class LogicController:
                     self._disarm_by_pin()
                 self.pin_buffer = ""
 
+    def _send_mqtt_message(self, name, event, topic):
+        self.publisher.enqueue_reading(
+            sensor_type=name,
+            sensor_name=name,
+            value=event,
+            topic=topic
+        )
+
     def handle_sensor_event(self, name, value):
+        print(f"NAME {name}, VALUE {value}")
         now = time.time()
         with self.lock:
             if name in self.uds_history:
@@ -126,7 +136,7 @@ class LogicController:
                     pass
                 return
 
-            if name.startswith("DHT") and isinstance(value, dict):
+            if name.startswith("DHT"):
                 self.latest_dht[name] = value
                 return
 

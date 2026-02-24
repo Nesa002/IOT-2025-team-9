@@ -4,40 +4,9 @@
         "device_name": "iot-edge-01",
         "location": "Gajba"
     },
-    "DPIR1": {
-        "simulated": true,
-        "pin": 19,
-        "topic": "iot/sensors/pir"
-    },
-    "DPIR3": {
-        "simulated": true,
-        "pin": 23,
-        "topic": "iot/sensors/pir3"
-    },
-    "DUS1": {
-        "simulated": true,
-        "trig_pin": 16,
-        "echo_pin": 15,
-        "topic": "iot/sensors/uds"
-    },
-    "DB": {
-        "simulated": true,
-        "pin": 29,
-        "topic": "iot/sensors/db"
-    },
-    "DMS": {
-        "simulated": true,
-        "pins": [22, 24, 26, 28, 32, 36, 38, 40],
-        "topic": "iot/sensors/dms"
-    },
     "DS1": {
         "simulated": true,
         "pin": 37,
         "topic": "iot/sensors/ds1"
-    },
-    "DL": {
-        "simulated": true,
-        "pin": 31,
-        "topic": "iot/sensors/dl"
     }
 }
