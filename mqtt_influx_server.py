@@ -93,6 +93,7 @@ def create_app(settings_path=None):
     worker_thread.start()
 
     def on_message(_client, _userdata, msg):
+        print("SERVER RECEIVED TOPIC:", msg.topic)
         try:
             payload = json.loads(msg.payload.decode("utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError):

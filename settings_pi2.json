@@ -1,4 +1,14 @@
 {
+    "mqtt": {
+        "host": "localhost",
+        "port": 1883,
+        "client_id": "pi2",
+        "batch_size": 5,
+        "batch_interval_s": 5,
+        "default_topic": "iot/pi",
+        "qos": 1,
+        "retain": false
+    },
     "device": {
         "pi_id": "PI2",
         "device_name": "iot-edge-02",

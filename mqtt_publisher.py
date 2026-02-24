@@ -29,6 +29,15 @@ class MqttBatchPublisher:
     def start(self):
         self._thread.start()
 
+    def enqueue_reading_pi(self, pi_id, sensor_name, value, topic):
+        reading = {
+            "pi_id": pi_id,
+            "sensor_name": sensor_name,
+            "value": value,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        self._client.publish(topic, json.dumps(reading), qos=self._qos, retain=self._retain)
+
     def enqueue_reading(self, sensor_type, sensor_name, value, simulated, unit=None, topic=None, extra_tags=None):
         reading = {
             "sensor_type": sensor_type,
@@ -62,6 +71,7 @@ class MqttBatchPublisher:
     def _publish_batch(self, batch):
         grouped = {}
         for item in batch:
+            print(item["topic"])
             grouped.setdefault(item["topic"], []).append(item["reading"])
         for topic, readings in grouped.items():
             payload = json.dumps({"readings": readings})

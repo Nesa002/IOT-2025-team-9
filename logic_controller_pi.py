@@ -1,15 +1,22 @@
-class LogicControllerPi:
-    def __init__(self, this_pi, queues):
-        self.queues = queues
+import json
 
-        seld.this_pi = this_pi
+import paho.mqtt.client as mqtt
+import os
+
+class LogicControllerPi:
+    def __init__(self, settings, this_pi, queues):
+        self.queues = queues
+        self.this_pi = this_pi
+        self.settings = settings
 
     def start(self):
+        mqtt_settings = self.settings.get("mqtt", {})
 
-        mqtt_client = mqtt.Client(client_id=mqtt_settings.get("server_client_id", "mqtt-influx"))
+        mqtt_client = mqtt.Client(client_id=mqtt_settings.get("client_id", "mqtt-influx"))
         if mqtt_settings.get("username"):
             mqtt_client.username_pw_set(mqtt_settings.get("username"), mqtt_settings.get("password"))
-        mqtt_client.on_message = on_message
+
+        mqtt_client.on_message = self.on_message
         mqtt_client.connect(
             os.getenv("MQTT_HOST", mqtt_settings.get("host", "localhost")),
             int(os.getenv("MQTT_PORT", mqtt_settings.get("port", 1883))),
@@ -18,7 +25,8 @@ class LogicControllerPi:
 
         mqtt_client.loop_start()
 
-    def on_message(_client, _userdata, msg):
+    def on_message(self, _client, _userdata, msg):
+        print("MQTT RECEIVED:", msg.topic, msg.payload)
         try:
             payload = json.loads(msg.payload.decode("utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError):
@@ -33,7 +41,7 @@ class LogicControllerPi:
         if target_pi is None:
             return  # invalid message
 
-        if this_pi is not None and str(target_pi) != str(this_pi):
+        if self.this_pi is not None and str(target_pi) != str(self.this_pi):
             return  # not meant for this Pi
 
         sensor_name = payload.get("sensor_name")
@@ -41,19 +49,19 @@ class LogicControllerPi:
         if sensor_name is None:
             return
 
-        if(this_pi=="PI1"):
+        if(self.this_pi=="PI1"):
 
             if(sensor_name=="DL"):
                 self.queues["dl"].put("dl on")
             if(sensor_name=="DB"):
                 self.queues["db"].put("buzz")
 
-        elif(this_pi=="PI2"):
+        elif(self.this_pi=="PI2"):
 
             if (sensor_name == "4SD"):
                 self.queues["display"].put(payload.get("value"))
 
-        elif(this_pi=="PI3"):
+        elif(self.this_pi=="PI3"):
             if (sensor_name == "LCD"):
                 self.queues["lcd"].put(payload.get("value"))
 

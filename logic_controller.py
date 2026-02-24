@@ -64,11 +64,14 @@ class LogicController:
     def _set_alarm(self, active, reason="unknown"):
 
         print("ALARM!!!")
+        self._send_mqtt_message("PI1","DL","dl on")
+
         if self.alarm_active == active:
             return
         self.alarm_active = active
         if active:
-            self.queues["db"].put("buzz")
+            self._send_mqtt_message("PI1","DB","buzz")
+            # self.queues["db"].put("buzz")
         else:
             self.security_armed = False
             self.pending_intrusion_at = None
@@ -113,7 +116,7 @@ class LogicController:
                 self.pin_buffer = ""
 
     def _send_mqtt_message(self, pi_id, sensor_name, value):
-        self.publisher.enqueue_reading(
+        self.publisher.enqueue_reading_pi(
             pi_id=pi_id,
             sensor_name=sensor_name,
             value=value,

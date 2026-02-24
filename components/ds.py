@@ -28,7 +28,7 @@ def run_ds(name, settings, threads, stop_event, publisher=None, event_handler=No
         print("Starting DS simulator")
         ds_thread = threading.Thread(target=run_ds_simulator,
 
-                                     args=(6, lambda event: ds_callback(name, event, publisher, settings, event_handler), stop_event))
+                                     args=(7, lambda event: ds_callback(name, event, publisher, settings, event_handler), stop_event))
         ds_thread.start()
         threads.append(ds_thread)
         print("DS simulator started")
