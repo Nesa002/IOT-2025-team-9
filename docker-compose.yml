@@ -42,6 +42,48 @@ services:
       - influxdb
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+
+  mqtt_influx_server:
+    image: python:3.11-slim
+    container_name: mqtt_influx_server
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && python mqtt_influx_server.py"
+    ports:
+      - "5000:5000"
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: 1883
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_ORG: iot
+      INFLUX_BUCKET: sensors
+      INFLUX_TOKEN: G6eMjZdaBn0jLMV7D_cTJvmu9wFMRAIMiaQg5qaZbqBEL4bZGKgcL8zqRtjUJRMk7QrfXjepFQx3nsBoXp280w==
+    depends_on:
+      - mosquitto
+      - influxdb
+
+  web_app:
+    image: python:3.11-slim
+    container_name: iot_web_app
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && python web_app.py"
+    ports:
+      - "5001:5001"
+    environment:
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_ORG: iot
+      INFLUX_BUCKET: sensors
+      INFLUX_TOKEN: G6eMjZdaBn0jLMV7D_cTJvmu9wFMRAIMiaQg5qaZbqBEL4bZGKgcL8zqRtjUJRMk7QrfXjepFQx3nsBoXp280w==
+    depends_on:
+      - influxdb
+      - grafana
 
 volumes:
   influxdb-data:

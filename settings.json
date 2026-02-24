@@ -36,5 +36,9 @@
         "token": "G6eMjZdaBn0jLMV7D_cTJvmu9wFMRAIMiaQg5qaZbqBEL4bZGKgcL8zqRtjUJRMk7QrfXjepFQx3nsBoXp280w==",
         "org": "iot",
         "bucket": "sensors"
+    },
+    "grafana": {
+        "url": "http://localhost:3000",
+        "dashboard_uid": "iot-overview"
     }
 }

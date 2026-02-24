@@ -1,0 +1,54 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {"type": "influxdb", "uid": "influx-iot"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+      "targets": [
+        {
+          "datasource": {"type": "influxdb", "uid": "influx-iot"},
+          "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Sva numerička očitavanja",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "influxdb", "uid": "influx-iot"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+      "id": 2,
+      "options": {"showHeader": true},
+      "targets": [
+        {
+          "datasource": {"type": "influxdb", "uid": "influx-iot"},
+          "query": "from(bucket: \"sensors\")\n  |> range(start: -24h)\n  |> filter(fn: (r) => r._field == \"value\" or r._field == \"state\")\n  |> group(columns: [\"sensor\", \"_field\"])\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Poslednje stanje svih senzora",
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["iot"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timezone": "",
+  "title": "IoT Overview",
+  "uid": "iot-overview",
+  "version": 1,
+  "weekStart": ""
+}
