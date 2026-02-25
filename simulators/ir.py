@@ -2,7 +2,7 @@
 import time
 import random
 
-BUTTONS = ["LEFT","RIGHT","UP","DOWN","OK","1","2","3","4","5"]
+BUTTONS = ["ON","OFF","RED","GREEN","BLUE"]
 
 def run_ir_simulator(callback, stop_event):
     while not stop_event.is_set():

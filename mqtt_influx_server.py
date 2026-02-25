@@ -16,13 +16,22 @@ from mqtt_publisher import MqttBatchPublisher
 from logic_controller import LogicController
 
 def _coerce_point(reading):
-    point = (
-        Point(reading.get("sensor_type", "sensor"))
-        .tag("sensor", reading.get("sensor_name", "unknown"))
-        .tag("device", reading.get("device", {}).get("device_name", "unknown"))
-        .tag("pi_id", reading.get("device", {}).get("pi_id", "unknown"))
-        .tag("simulated", str(reading.get("simulated", False)).lower())
-    )
+    point = Point(reading.get("sensor_type", "sensor"))
+
+    # Always present
+    point = point.tag("sensor", reading.get("sensor_name", "unknown"))
+    point = point.tag("simulated", str(reading.get("simulated", False)).lower())
+
+    device = reading.get("device")
+    if isinstance(device, dict):
+        device_name = device.get("device_name")
+        pi_id = device.get("pi_id")
+
+        if device_name:
+            point = point.tag("device", device_name)
+
+        if pi_id:
+            point = point.tag("pi_id", pi_id)
 
     timestamp = reading.get("timestamp")
     if timestamp:

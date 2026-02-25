@@ -51,14 +51,13 @@ class LogicController:
         self.command_thread.start()
 
     def _emit_logic_event(self, name, value, tags=None):
-        return
         if self.publisher:
             self.publisher.enqueue_reading(
                 sensor_type="LOGIC",
                 sensor_name=name,
                 value=value,
                 simulated=True,
-                topic=self.settings.get("mqtt", {}).get("default_topic", "iot/sensors"),
+                topic="iot/logic/event",
                 extra_tags=tags or {},
             )
 
