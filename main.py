@@ -16,6 +16,7 @@ from components.lcd import run_lcd
 from components.btn import run_button
 from components.rgb import run_rgb
 from components.gyro import run_gyro
+from components.ir import run_ir
 
 import os
 import time
@@ -90,6 +91,8 @@ if __name__ == "__main__":
                 run_rgb(sensor_name, sensor_cfg, threads, stop_event, rgb_queue, publisher)
             elif sensor_name == "GYRO":
                 run_gyro(sensor_name, sensor_cfg, threads, stop_event, gyro_queue, publisher)
+            elif sensor_name == "IR":
+                run_ir(sensor_name, sensor_cfg, threads, stop_event, publisher)
             else:
                 pass
 
