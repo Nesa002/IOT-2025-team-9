@@ -29,7 +29,8 @@
             "DHT2_humidity": "iot/sensors/dht2/humidity",
             "DHT2_temperature": "iot/sensors/dht2/temperature",
             "BRGB": "iot/sensors/rgb",
-            "IR": "iot/sensors/ir"
+            "IR": "iot/sensors/ir",
+            "LOGIC": "iot/logic/event"
         }
     },
     "influxdb": {
