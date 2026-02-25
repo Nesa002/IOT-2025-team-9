@@ -51,3 +51,81 @@ iframe {
     border: 1px solid #fed7aa;
     padding: 12px;
 }
+
+/* ===== Alarm Panel ===== */
+
+.alarm {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    padding: 14px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 1000;
+    color: white;
+    transition: background 0.3s ease, opacity 0.3s ease;
+}
+
+.alarm:not(.hidden) {
+    background: #b30000;
+    animation: alarm-pulse 1.2s infinite;
+}
+
+.alarm.hidden #alarm-off-btn {
+    pointer-events: none; 
+    opacity: 0.85;
+    cursor: not-allowed;
+}
+
+.alarm.hidden {
+    display: block;  
+    background: #111827; 
+    animation: none;
+    opacity: 0.95;
+    color: #f3f4f6;
+}
+
+.alarm-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+#alarm-text {
+    font-size: 16px;
+}
+
+#alarm-off-btn {
+    background: white;
+    color: #b30000;
+    border: none;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.alarm.hidden #alarm-off-btn {
+    color: #1f2937;
+}
+
+#alarm-off-btn:hover {
+    background: #ffe5e5;
+}
+
+#alarm-off-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes alarm-pulse {
+    0% { background: #b30000; }
+    50% { background: #d90429; }
+    100% { background: #b30000; }
+}

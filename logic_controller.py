@@ -61,7 +61,14 @@ class LogicController:
                 topic=self.settings.get("mqtt", {}).get("default_topic", "iot/sensors"),
                 extra_tags=tags or {},
             )
-
+            
+    def get_alarm_state(self):
+        with self.lock:
+            return {
+                "active": self.alarm_active,
+                "armed": self.security_armed,
+            }
+        
     def _set_alarm(self, active, reason="unknown"):
 
         print("ALARM!!!")

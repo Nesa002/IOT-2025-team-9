@@ -8,6 +8,12 @@
 </head>
 <body>
     <main class="layout">
+        <section id="alarm-panel" class="alarm hidden">
+            <div class="alarm-content">
+                <span id="alarm-text">ALARM ACTIVE</span>
+                <button id="alarm-off-btn">Isključi alarm</button>
+            </div>
+        </section>
         <section>
             <h1>Trenutno stanje elemenata sistema</h1>
             <p class="hint">Podaci se osvežavaju svakih 10 sekundi.</p>
@@ -74,6 +80,31 @@
 
         loadStates();
         setInterval(loadStates, 10000);
+
+        const alarmPanel = document.getElementById("alarm-panel");
+        const alarmBtn = document.getElementById("alarm-off-btn");
+
+        alarmBtn.onclick = async () => {
+            await fetch("/api/alarm/off", { method: "POST" });
+        };
+
+        function updateAlarmUI(state) {
+            if (state.active) {
+                alarmPanel.classList.remove("hidden");
+            } else {
+                alarmPanel.classList.add("hidden");
+            }
+        }
+
+        fetch("/api/alarm")
+            .then(r => r.json())
+            .then(updateAlarmUI);
+
+        const evt = new EventSource("/api/alarm/stream");
+        evt.onmessage = (e) => {
+            const state = JSON.parse(e.data);
+            updateAlarmUI(state);
+        };
     </script>
 </body>
 </html>

@@ -3,8 +3,9 @@ import json
 import queue
 import threading
 from datetime import datetime
+import time
 
-from flask import Flask, jsonify, render_template, request, Response
+from flask import Flask, jsonify, render_template, request, Response, stream_with_context
 import requests
 import paho.mqtt.client as mqtt
 
@@ -13,8 +14,6 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from settings import load_settings
 from mqtt_publisher import MqttBatchPublisher
 from logic_controller import LogicController
-
-
 
 def _coerce_point(reading):
     point = (
@@ -242,9 +241,36 @@ def create_app(settings_path=None):
                 resp.headers[k] = v
 
         return resp
+    
+    @app.route("/api/alarm/off", methods=["POST"])
+    def alarm_off():
+        controller.handle_command({"action": "alarm_off"})
+        return jsonify({"ok": True})
+
+
+    @app.route("/api/alarm")
+    def alarm_state():
+        return jsonify(controller.get_alarm_state())
+
+
+    @app.route("/api/alarm/stream")
+    def alarm_stream():
+
+        def event_stream():
+            last = None
+            while True:
+                state = controller.get_alarm_state()
+                if state != last:
+                    yield f"data: {json.dumps(state)}\n\n"
+                    last = state
+                time.sleep(1)
+
+        return Response(
+            stream_with_context(event_stream()),
+            mimetype="text/event-stream"
+        )
 
     return app
-
 
 if __name__ == "__main__":
     application = create_app()
