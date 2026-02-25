@@ -17,7 +17,7 @@
     "DPIR1": {
         "simulated": true,
         "pin": 19,
-        "topic": "iot/sensors/pir"
+        "topic": "iot/sensors/pir1"
     },
     "DPIR3": {
         "simulated": true,
@@ -28,7 +28,7 @@
         "simulated": true,
         "trig_pin": 16,
         "echo_pin": 15,
-        "topic": "iot/sensors/uds"
+        "topic": "iot/sensors/uds1"
     },
     "DB": {
         "simulated": true,

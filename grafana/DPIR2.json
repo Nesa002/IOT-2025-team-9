@@ -1,7 +1,7 @@
 {
-  "id": 2,
+  "id": 8,
   "type": "timeseries",
-  "title": "DPIR1",
+  "title": "DPIR2",
   "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
   "fieldConfig": {
     "defaults": {
@@ -81,7 +81,7 @@
   "targets": [
     {
       "refId": "A",
-      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DPIR1\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DPIR1\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"motion_detected\" then 1 else 0 }))\n  |> yield(name: \"mean\")\n"
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DPIR2\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DPIR2\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"motion_detected\" then 1 else 0 }))\n  |> yield(name: \"mean\")\n"
     }
   ],
   "datasource": {

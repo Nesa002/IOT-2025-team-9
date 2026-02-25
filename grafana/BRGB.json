@@ -1,8 +1,8 @@
 {
-  "id": 7,
+  "id": 19,
   "type": "table",
-  "title": "DMS Key Presses",
-  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "title": "BRGB",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 62},
   "fieldConfig": {
     "defaults": {
       "custom": {
@@ -22,14 +22,8 @@
       "thresholds": {
         "mode": "absolute",
         "steps": [
-          {
-            "value": null,
-            "color": "green"
-          },
-          {
-            "value": 1,
-            "color": "red"
-          }
+          {"value": null, "color": "green"},
+          {"value": 1, "color": "red"}
         ]
       },
       "color": {
@@ -42,7 +36,7 @@
   "targets": [
     {
       "refId": "A",
-      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DMS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\n  |> yield(name: \"key_presses\")"
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BRGB\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"BRGB\")\n  |> yield(name: \"brgb_state\")"
     }
   ],
   "datasource": {
