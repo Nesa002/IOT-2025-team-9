@@ -69,24 +69,6 @@ services:
     depends_on:
       - mosquitto
       - influxdb
-
-  web_app:
-    image: python:3.11-slim
-    container_name: iot_web_app
-    restart: unless-stopped
-    working_dir: /app
-    volumes:
-      - ./:/app
-    command: sh -c "pip install --no-cache-dir -r requirements.txt && python web_app.py"
-    ports:
-      - "5001:5001"
-    environment:
-      INFLUX_URL: http://influxdb:8086
-      INFLUX_ORG: iot
-      INFLUX_BUCKET: sensors
-      INFLUX_TOKEN: G6eMjZdaBn0jLMV7D_cTJvmu9wFMRAIMiaQg5qaZbqBEL4bZGKgcL8zqRtjUJRMk7QrfXjepFQx3nsBoXp280w==
-    depends_on:
-      - influxdb
       - grafana
 
 volumes:
