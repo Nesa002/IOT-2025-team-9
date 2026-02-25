@@ -61,6 +61,17 @@ class LogicController:
                 topic=self.settings.get("mqtt", {}).get("default_topic", "iot/sensors"),
                 extra_tags=tags or {},
             )
+
+    def handle_timer_add(self, seconds: int):
+        with self.lock:
+            self.timer_remaining += max(0, seconds)
+            self.timer_running = True
+        print(f"[LogicController] Added {seconds} seconds to timer, new value: {self.timer_remaining}")
+
+    def handle_timer_step(self, seconds: int):
+        with self.lock:
+            self.timer_add_step = max(1, seconds)
+        print(f"[LogicController] Timer add step set to {self.timer_add_step} seconds")
             
     def get_alarm_state(self):
         with self.lock:
@@ -210,10 +221,22 @@ class LogicController:
 
     def _tick_loop(self):
         last_timer_tick = time.time()
+        acc = 0.0
         while not self.stop_event.is_set():
 
             now = time.time()
             with self.lock:
+                elapsed = now - last_timer_tick
+                last_timer_tick = now
+                acc += elapsed
+                while acc >= 1.0:
+                    if self.timer_running and self.timer_remaining > 0:
+                        self.timer_remaining -= 1
+                        if self.timer_remaining == 0:
+                            self.timer_running = False
+                            self.timer_blinking = False
+                            print("Timer ran out")
+                    acc -= 1.0
                 for ds_name, opened_at in self.door_open_since.items():
                     if opened_at and now - opened_at >= 5:
 
@@ -231,20 +254,12 @@ class LogicController:
                     self.pending_intrusion_at = None
                     self._set_alarm(True, "intrusion_no_pin")
 
-                if self.timer_running and now - last_timer_tick >= 1:
-                    elapsed = int(now - last_timer_tick)
-                    self.timer_remaining = max(0, self.timer_remaining - elapsed)
-                    last_timer_tick = now
-                    if self.timer_remaining == 0:
-                        self.timer_running = False
-                        self.timer_blinking = True
-
                 if self.timer_blinking:
                     self.timer_visible = not self.timer_visible
 
                 self._push_timer_display()
                 self._rotate_lcd(now)
-            time.sleep(1)
+            time.sleep(0.1)
 
     def _push_timer_display(self):
         shown = self.timer_remaining if self.timer_visible else 0

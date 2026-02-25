@@ -36,7 +36,8 @@ class MqttBatchPublisher:
             "value": value,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        self._client.publish(topic, json.dumps(reading), qos=self._qos, retain=self._retain)
+        info = self._client.publish(topic, json.dumps(reading), qos=self._qos, retain=self._retain)
+        info.wait_for_publish()
 
     def enqueue_reading(self, sensor_type, sensor_name, value, simulated, unit=None, topic=None, extra_tags=None):
         reading = {

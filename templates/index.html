@@ -14,6 +14,21 @@
                 <button id="alarm-off-btn">Isključi alarm</button>
             </div>
         </section>
+        <section id="timer-panel" class="timer">
+            <div class="timer-content">
+                <span id="timer-display">00:00</span>
+                <button id="timer-add-btn">+N sekundi</button>
+                <input type="number" id="timer-set-input" placeholder="Vreme u s" />
+                <button id="timer-set-btn">Postavi</button>
+            </div>
+        </section>
+
+        <section id="rgb-panel" class="rgb">
+            <div class="rgb-content">
+                <input type="color" id="rgb-color-picker" value="#ffffff" />
+                <button id="rgb-send-btn">Postavi boju</button>
+            </div>
+        </section>
         <section>
             <h1>Trenutno stanje elemenata sistema</h1>
             <p class="hint">Podaci se osvežavaju svakih 10 sekundi.</p>
@@ -104,6 +119,64 @@
         evt.onmessage = (e) => {
             const state = JSON.parse(e.data);
             updateAlarmUI(state);
+        };
+
+        // ===== Timer =====
+        const timerDisplay = document.getElementById("timer-display");
+        const timerAddBtn = document.getElementById("timer-add-btn");
+        const timerSetBtn = document.getElementById("timer-set-btn");
+        const timerSetInput = document.getElementById("timer-set-input");
+
+        timerAddBtn.onclick = async () => {
+            await fetch("/api/timer/add_step", { method: "POST" });
+        };
+
+        timerSetBtn.onclick = async () => {
+            const seconds = parseInt(timerSetInput.value);
+            if (!isNaN(seconds)) {
+                await fetch("/api/timer/set", { 
+                    method: "POST", 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ seconds }) 
+                });
+            }
+        };
+
+        function updateTimerUI(state) {
+            let mins = Math.floor(state.remaining / 60).toString().padStart(2, '0');
+            let secs = (state.remaining % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${mins}:${secs}`;
+            timerDisplay.style.visibility = 'visible';
+        }
+
+        const timerEvt = new EventSource("/api/timer/stream");
+        timerEvt.onmessage = (e) => {
+            const state = JSON.parse(e.data);
+            updateTimerUI(state);
+        };
+
+        const rgbPicker = document.getElementById("rgb-color-picker");
+        const rgbSendBtn = document.getElementById("rgb-send-btn");
+
+        rgbSendBtn.onclick = () => {
+            fetch("/api/rgb", { 
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ color: rgbPicker.value })
+            });
+        };
+
+        function updateRGBUI(state) {
+            if (state.color) {
+                rgbPicker.value = state.color;
+            }
+        }
+
+        // Live updates
+        const rgbEvt = new EventSource("/api/rgb/stream");
+        rgbEvt.onmessage = (e) => {
+            const state = JSON.parse(e.data);
+            updateRGBUI(state);
         };
     </script>
 </body>

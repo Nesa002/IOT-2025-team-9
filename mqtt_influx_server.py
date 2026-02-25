@@ -269,6 +269,50 @@ def create_app(settings_path=None):
             stream_with_context(event_stream()),
             mimetype="text/event-stream"
         )
+    
+    timer_state = {
+        "remaining": 0,
+        "running": False,
+        "blinking": False,
+        "add_step": 10
+    }
+
+    @app.route("/api/timer/set", methods=["POST"])
+    def set_timer():
+        data = request.json
+        seconds = int(data.get("seconds", 0))
+        timer_state["add_step"] = seconds
+        controller.handle_timer_step(seconds)
+        return jsonify(timer_state)
+
+    @app.route("/api/timer/add_step", methods=["POST"])
+    def add_timer_step():
+        timer_state["remaining"] += timer_state["add_step"]
+        controller.handle_timer_add(timer_state["add_step"])
+        return jsonify(timer_state)
+
+    @app.route("/api/timer/state")
+    def get_timer_state():
+        return jsonify(timer_state)
+    
+    @app.route("/api/timer/stream")
+    def timer_stream():
+        def event_stream():
+            last_remaining = None
+            while True:
+                remaining = controller.timer_remaining
+                if remaining != last_remaining:
+                    yield f"data: {json.dumps({'remaining': remaining})}\n\n"
+                    last_remaining = remaining
+                time.sleep(1)
+        return Response(event_stream(), mimetype="text/event-stream")
+
+    @app.route("/api/rgb", methods=["POST"])
+    def set_rgb():
+        data = request.json
+        color = data.get("color", "#ffffff")
+        controller.handle_command({"action": "rgb", "color": color})
+        return jsonify({"ok": True})
 
     return app
 

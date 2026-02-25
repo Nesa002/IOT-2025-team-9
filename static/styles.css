@@ -57,7 +57,7 @@ iframe {
 .alarm {
     position: sticky;
     top: 0;
-    width: 100%;
+    width: 96.8%;
     padding: 14px 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     z-index: 1000;
@@ -128,4 +128,43 @@ iframe {
     0% { background: #b30000; }
     50% { background: #d90429; }
     100% { background: #b30000; }
+}
+
+/* Timer panel */
+.timer {
+    background: #1f2937;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: bold;
+}
+
+.timer button {
+    padding: 6px 14px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+#timer-add-btn { background: #3b82f6; color: white; }
+#timer-set-btn { background: #10b981; color: white; }
+#timer-set-input { width: 80px; }
+
+/* RGB panel */
+.rgb {
+    background: #111827;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rgb input[type="color"] {
+    width: 40px;
+    height: 30px;
+    border: none;
+    cursor: pointer;
 }
