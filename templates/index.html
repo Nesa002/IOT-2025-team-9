@@ -10,7 +10,7 @@
     <main class="layout">
         <section id="alarm-panel" class="alarm hidden">
             <div class="alarm-content">
-                <span id="alarm-text">ALARM</span>
+                <span id="alarm-text">ALARM ISKLJUCEN</span>
                 <button id="alarm-off-btn">Isključi alarm</button>
             </div>
         </section>
@@ -104,9 +104,14 @@
         };
 
         function updateAlarmUI(state) {
+            const alarmText = document.getElementById("alarm-text");
             if (state.active) {
+                alarmText.textContent = "ALARM ULJUCEN";
+
                 alarmPanel.classList.remove("hidden");
             } else {
+                alarmText.textContent = "ALARM ISKLJUCEN";
+
                 alarmPanel.classList.add("hidden");
             }
         }
