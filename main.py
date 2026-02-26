@@ -30,7 +30,7 @@ except:
 if __name__ == "__main__":
     print('Starting app')
 
-    pi_id = os.getenv("PI_ID", "PI1").upper()
+    pi_id = os.getenv("PI_ID", "PI3").upper()
     settings_file = f"settings_{pi_id.lower()}.json"
     print(f"Loading settings for {pi_id} from {settings_file}")
 
@@ -47,24 +47,25 @@ if __name__ == "__main__":
     rgb_queue = queue.Queue()
     gyro_queue = queue.Queue()
 
+    device_info = settings.get("device", {"pi_id": "PI3", "device_name": "unknown"})
+    publisher = MqttBatchPublisher(settings.get("mqtt", {}), device_info, stop_event)
+    publisher.start()
+
+    controller = LogicControllerPi(
+        settings=settings,
+        this_pi=pi_id,
+        queues={
+            "dl": dl_queue,
+            "db": db_queue,
+            "display": display_queue,
+            "lcd": lcd_queue,
+            "rgb": rgb_queue,
+        },
+    )
+    controller.start()
 
     try:
-        device_info = settings.get("device", {"pi_id": "PI1", "device_name": "unknown"})
-        publisher = MqttBatchPublisher(settings.get("mqtt", {}), device_info, stop_event)
-        publisher.start()
 
-        controller = LogicControllerPi(
-            settings=settings,
-            this_pi=pi_id,
-            queues={
-                "dl": queue.Queue(),
-                "db": queue.Queue(),
-                "display": queue.Queue(),
-                "lcd": queue.Queue(),
-                "rgb": queue.Queue(),
-            },
-        )
-        controller.start()
 
         for sensor_name, sensor_cfg in settings.items():
             if sensor_name in ("DPIR1", "DPIR2", "DPIR3"):

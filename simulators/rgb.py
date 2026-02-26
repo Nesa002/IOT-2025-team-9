@@ -7,6 +7,7 @@ def run_rgb_simulator(callback, stop_event, rgb_queue):
             if user_input.startswith("rgb "):
                 color = user_input.split(" ", 1)[1]
                 callback(color)
+                print("rgb "+color)
         except queue.Empty:
             pass
         except KeyboardInterrupt:

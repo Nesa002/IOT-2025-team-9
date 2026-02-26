@@ -28,6 +28,8 @@ class LogicController:
         }
         self.door_open_since = {"DS1": None, "DS2": None}
 
+        self.ir="OFF"
+
         self.latest_dht = {}
         self.timer_remaining = 0
         self.timer_running = False
@@ -122,16 +124,23 @@ class LogicController:
 
         # TODO: enter pin instead of *
         if key == "*":
+            if(self.security_armed):
+                if self.pin_buffer == self.pin_code:
+                    self._disarm_by_pin()
+                    return
+            if len(self.pin_buffer)<4:
+                return
             self._arm_security()
+            self.pin_code=self.pin_buffer
             return
 
         if key.isdigit():
-            self.pin_buffer += key
-            self.pin_buffer = self.pin_buffer[-4:]
+            #if entered number instead of star
             if len(self.pin_buffer) == 4:
-                if self.pin_buffer == self.pin_code:
-                    self._disarm_by_pin()
                 self.pin_buffer = ""
+                return
+            self.pin_buffer += key
+
 
     def _send_mqtt_message(self, pi_id, sensor_name, value):
         self.publisher.enqueue_reading_pi(
@@ -196,6 +205,21 @@ class LogicController:
                     self._set_alarm(True, "perimeter_motion_empty")
                 return
 
+            if name == "IR":
+
+                if value=="ON":
+                    self._send_mqtt_message("PI3", "BRGB", "rgb on")
+                    print("sent")
+                    self.ir = "ON"
+                elif value=="OFF":
+                    self._send_mqtt_message("PI3", "BRGB", "rgb off")
+                    self.ir = "OFF"
+                elif(self.ir == "OFF"):print("IR IS OFF")
+                elif value=="RED": self._send_mqtt_message("PI3", "BRGB", "rgb red")
+                elif value=="GREEN": self._send_mqtt_message("PI3", "BRGB", "rgb green")
+                elif value=="BLUE": self._send_mqtt_message("PI3", "BRGB", "rgb blue")
+
+
             if name == "GYRO" and isinstance(value, dict):
 
                 # TODO: use actual value
@@ -216,7 +240,7 @@ class LogicController:
         delta = recent[-1] - recent[0]
         entering = delta < 0
         self.occupancy = max(0, self.occupancy + (1 if entering else -1))
-        self._emit_logic_event("OCCUPANCY", self.occupancy, {"trigger": pir_name, "direction": "in" if entering else "out"})
+        self._emit_logic_event("OCCUPANCY", str(self.occupancy), {"trigger": pir_name, "direction": "in" if entering else "out"})
 
     def _tick_loop(self):
         last_timer_tick = time.time()

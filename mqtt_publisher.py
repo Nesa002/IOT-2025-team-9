@@ -19,7 +19,7 @@ class MqttBatchPublisher:
         self._default_topic = mqtt_settings.get("default_topic", "iot/sensors")
         self._qos = mqtt_settings.get("qos", 1)
         self._retain = mqtt_settings.get("retain", False)
-        self._client = mqtt.Client(client_id=mqtt_settings.get("client_id"))
+        self._client = mqtt.Client(client_id=mqtt_settings.get("client_id")+"p")
         username = mqtt_settings.get("username")
         password = mqtt_settings.get("password")
         if username:
@@ -38,6 +38,7 @@ class MqttBatchPublisher:
         }
         info = self._client.publish(topic, json.dumps(reading), qos=self._qos, retain=self._retain)
         info.wait_for_publish()
+        print(info)
 
     def enqueue_reading(self, sensor_type, sensor_name, value, simulated, unit=None, topic=None, extra_tags=None):
         reading = {

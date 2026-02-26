@@ -142,7 +142,7 @@ def create_app(settings_path=None):
                 controller.handle_sensor_event(name, value)
 
     mqtt_client = mqtt.Client(
-        client_id=mqtt_settings.get("server_client_id", "mqtt-influx")
+        client_id=mqtt_settings.get("client_id")
     )
 
     if mqtt_settings.get("username"):
