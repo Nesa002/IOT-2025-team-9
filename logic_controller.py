@@ -200,7 +200,6 @@ class LogicController:
 
 
             if name == "DPIR3" and value == "motion_detected":
-                print(self.occupancy)
                 if self.occupancy == 0:
                     self._set_alarm(True, "perimeter_motion_empty")
                 return
@@ -209,7 +208,6 @@ class LogicController:
 
                 if value=="ON":
                     self._send_mqtt_message("PI3", "BRGB", "rgb on")
-                    print("sent")
                     self.ir = "ON"
                 elif value=="OFF":
                     self._send_mqtt_message("PI3", "BRGB", "rgb off")
@@ -226,7 +224,7 @@ class LogicController:
                     value["gy"] ** 2 +
                     value["gz"] ** 2
                 )
-                print("GURO "+str(magnitude))
+                print("GYRO "+str(magnitude))
                 if magnitude > 500:
                     self._set_alarm(True, "gsg_movement")
 
@@ -253,7 +251,6 @@ class LogicController:
             #if alarm is active activate the buzzer
             if(self.alarm_active):
                 self._send_mqtt_message("PI1","DB","buzz")
-                print("ALARM")
 
             now = time.time()
             with self.lock:
@@ -270,8 +267,6 @@ class LogicController:
                     acc -= 1.0
                 for ds_name, opened_at in self.door_open_since.items():
                     if opened_at and now - opened_at >= 5:
-
-                        print(now - opened_at)
                         self._set_alarm(True, f"{ds_name}_unlocked")
 
                 if self.pending_arm_at and now >= self.pending_arm_at:
@@ -293,24 +288,54 @@ class LogicController:
             time.sleep(0.1)
 
     def _push_timer_display(self):
+        now = time.time()  # current time in seconds
+        DISPLAY_INTERVAL = 1  # seconds between updates
+
+        # Only update if enough time has passed since last display
+        if now - getattr(self, "last_timer_display", 0) < DISPLAY_INTERVAL:
+            return
+
+        # Compute what to show
         shown = self.timer_remaining if self.timer_visible else 0
         minutes = shown // 60
         seconds = shown % 60
-        # self._send_mqtt_message("PI2", "4SD", f"disp {minutes:02d}:{seconds:02d}")
-       # self.queues["display"].put(f"disp {minutes:02d}:{seconds:02d}")
+
+
+        # try sending, ignore errors
+        try:
+            self._send_mqtt_message("PI2", "4SD", f"disp {minutes:02d}:{seconds:02d}")
+            # self.queues["display"].put(f"disp {minutes:02d}:{seconds:02d}")
+            pass
+        except:
+            pass  # primitive: just skip if fails
+
+            # Remember last display time
+        self.last_timer_display = now
 
     def _rotate_lcd(self, now):
         if not self.latest_dht or now - self.last_lcd_rotation < 4:
             return
-        names = sorted(self.latest_dht.keys())
-        name = names[self.last_lcd_index % len(names)]
-        val = self.latest_dht[name]
+
+        # Assume latest_dht keys are like "DHT1_temperature", "DHT1_humidity"
+        sensors = {}
+        for key, value in self.latest_dht.items():
+            sensor_name, meas = key.split("_", 1)  # split "DHT1_temperature" -> "DHT1", "temperature"
+            sensors.setdefault(sensor_name, {})[meas] = value
+
+        # Rotate through sensor names
+        sensor_names = sorted(sensors.keys())
+        sensor_name = sensor_names[self.last_lcd_index % len(sensor_names)]
+        val = sensors[sensor_name]
+
         self.last_lcd_index += 1
         self.last_lcd_rotation = now
 
-        self._send_mqtt_message("PI3", "LCD", f"lcd {name} T:{val.get('temperature', '?')}C H:{val.get('humidity', '?')}%")
-       # self.queues["lcd"].put(f"lcd {name} T:{val.get('temperature', '?')}C H:{val.get('humidity', '?')}%")
+        temp = val.get("temperature", "?")
+        hum = val.get("humidity", "?")
+        print(f"{sensor_name} -> T:{temp}C H:{hum}%")
 
+        self._send_mqtt_message("PI3", "LCD", f"lcd {sensor_name} T:{temp}C H:{hum}%")
+        
     def _command_listener(self):
         mqtt_settings = self.settings.get("mqtt", {})
         client = mqtt.Client(client_id=f"logic-{int(time.time())}")
@@ -336,8 +361,8 @@ class LogicController:
     def handle_command(self, payload):
         action = payload.get("action")
         if action == "alarm_off":
+            self.door_open_since = {"DS1": None, "DS2": None}
             self._set_alarm(False, "web")
-            print("web alarm off")
         elif action == "arm":
             self._arm_security()
         elif action == "timer_set":

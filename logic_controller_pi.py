@@ -37,7 +37,6 @@ class LogicControllerPi:
 
 
     def on_message(self, client, userdata, msg):
-        print("[MQTT] RECEIVED:", msg.topic, msg.payload)
 
         try:
             text = msg.payload.decode("utf-8")
@@ -82,5 +81,3 @@ class LogicControllerPi:
                 self.queues["lcd"].put(value)
             elif sensor_name == "BRGB":
                 self.queues["rgb"].put(value)
-
-        print("[MQTT] processed OK")

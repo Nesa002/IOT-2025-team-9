@@ -22,10 +22,11 @@ def pir_callback(name, event, publisher, settings, event_handler=None):
 def run_pir(name, settings, threads, stop_event, publisher=None, event_handler=None):
     if settings['simulated']:
         print("Starting PIR simulator")
+        time.sleep(0.5)
         pir_thread = threading.Thread(
             target=run_pir_simulator,
 
-            args=(5, lambda event: pir_callback(name, event, publisher, settings, event_handler), stop_event),
+            args=(10, lambda event: pir_callback(name, event, publisher, settings, event_handler), stop_event),
         )
         pir_thread.start()
         threads.append(pir_thread)

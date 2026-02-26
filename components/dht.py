@@ -34,7 +34,7 @@ def run_dht(name, settings, threads, stop_event, publisher=None, event_handler=N
         print(f"Starting {name} simulator")
         dht_thread = threading.Thread(
             target=run_dht_simulator,
-            args=(2, lambda h, temp: dht_callback(name, h, temp, publisher, settings, event_handler), stop_event)
+            args=(5, lambda h, temp: dht_callback(name, h, temp, publisher, settings, event_handler), stop_event)
         )
         dht_thread.start()
         threads.append(dht_thread)
@@ -44,7 +44,7 @@ def run_dht(name, settings, threads, stop_event, publisher=None, event_handler=N
         dht = DHT(settings['pin'])
         dht_thread = threading.Thread(
             target=run_dht_loop,
-            args=(dht, 2, lambda h, temp: dht_callback(name, h, temp, publisher, settings, event_handler), stop_event)
+            args=(dht, 5, lambda h, temp: dht_callback(name, h, temp, publisher, settings, event_handler), stop_event)
         )
         dht_thread.start()
         threads.append(dht_thread)

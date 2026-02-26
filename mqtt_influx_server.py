@@ -327,4 +327,8 @@ def create_app(settings_path=None):
 
 if __name__ == "__main__":
     application = create_app()
+    # Disable Flask default logging
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)  # Only show errors
     application.run(host="0.0.0.0", port=5000)

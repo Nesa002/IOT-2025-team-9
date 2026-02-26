@@ -38,7 +38,6 @@ class MqttBatchPublisher:
         }
         info = self._client.publish(topic, json.dumps(reading), qos=self._qos, retain=self._retain)
         info.wait_for_publish()
-        print(info)
 
     def enqueue_reading(self, sensor_type, sensor_name, value, simulated, unit=None, topic=None, extra_tags=None):
         reading = {
@@ -73,7 +72,6 @@ class MqttBatchPublisher:
     def _publish_batch(self, batch):
         grouped = {}
         for item in batch:
-            print(item["topic"])
             grouped.setdefault(item["topic"], []).append(item["reading"])
         for topic, readings in grouped.items():
             payload = json.dumps({"readings": readings})
