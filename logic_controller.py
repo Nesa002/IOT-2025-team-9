@@ -83,16 +83,10 @@ class LogicController:
         
     def _set_alarm(self, active, reason="unknown"):
 
-        print("ALARM!!!")
-        self._send_mqtt_message("PI1","DL","dl on")
-
         if self.alarm_active == active:
             return
         self.alarm_active = active
-        if active:
-            self._send_mqtt_message("PI1","DB","buzz")
-            # self.queues["db"].put("buzz")
-        else:
+        if not active:
             self.security_armed = False
             self.pending_intrusion_at = None
         state = "entered" if active else "cleared"
@@ -123,18 +117,25 @@ class LogicController:
             return
 
         if key == "*":
+
+            if len(self.pin_buffer)<4:
+                self.pin_buffer = ""
+                return
+
             if(self.security_armed):
                 if self.pin_buffer == self.pin_code:
                     self._disarm_by_pin()
-                    return
-            if len(self.pin_buffer)<4:
-                return
-            self._arm_security()
-            self.pin_code=self.pin_buffer
+                self.pin_buffer = ""
+            else:
+                self._arm_security()
+                self.pin_code=self.pin_buffer
+                self.pin_buffer = ""
             return
 
         if key.isdigit():
-            #if entered number instead of star
+
+            #if entered number instead of star, empty buffer
+            
             if len(self.pin_buffer) == 4:
                 self.pin_buffer = ""
                 return
@@ -198,7 +199,7 @@ class LogicController:
                 self._update_occupancy_from_motion(name)
 
 
-            if name in ("DPIR1", "DPIR2", "DPIR3") and value == "motion_detected":
+            if name == "DPIR3" and value == "motion_detected":
                 print(self.occupancy)
                 if self.occupancy == 0:
                     self._set_alarm(True, "perimeter_motion_empty")
@@ -225,7 +226,8 @@ class LogicController:
                     value["gy"] ** 2 +
                     value["gz"] ** 2
                 )
-                if magnitude > 700:
+                print("GURO "+str(magnitude))
+                if magnitude > 500:
                     self._set_alarm(True, "gsg_movement")
 
     def _update_occupancy_from_motion(self, pir_name):
@@ -247,6 +249,11 @@ class LogicController:
         last_timer_tick = time.time()
         acc = 0.0
         while not self.stop_event.is_set():
+
+            #if alarm is active activate the buzzer
+            if(self.alarm_active):
+                self._send_mqtt_message("PI1","DB","buzz")
+                print("ALARM")
 
             now = time.time()
             with self.lock:
@@ -330,6 +337,7 @@ class LogicController:
         action = payload.get("action")
         if action == "alarm_off":
             self._set_alarm(False, "web")
+            print("web alarm off")
         elif action == "arm":
             self._arm_security()
         elif action == "timer_set":

@@ -30,7 +30,7 @@ except:
 if __name__ == "__main__":
     print('Starting app')
 
-    pi_id = os.getenv("PI_ID", "PI3").upper()
+    pi_id = os.getenv("PI_ID", "PI2").upper()
     settings_file = f"settings_{pi_id.lower()}.json"
     print(f"Loading settings for {pi_id} from {settings_file}")
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     rgb_queue = queue.Queue()
     gyro_queue = queue.Queue()
 
-    device_info = settings.get("device", {"pi_id": "PI3", "device_name": "unknown"})
+    device_info = settings.get("device", {"pi_id": "PI2", "device_name": "unknown"})
     publisher = MqttBatchPublisher(settings.get("mqtt", {}), device_info, stop_event)
     publisher.start()
 
