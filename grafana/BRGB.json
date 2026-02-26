@@ -39,10 +39,7 @@
       "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BRGB\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"BRGB\")\n  |> yield(name: \"brgb_state\")"
     }
   ],
-  "datasource": {
-    "uid": "bfbtzopglup6oc",
-    "type": "influxdb"
-  },
+  "datasource": {"type": "influxdb", "name": "InfluxDB"},
   "options": {
     "showHeader": true,
     "cellHeight": "sm",

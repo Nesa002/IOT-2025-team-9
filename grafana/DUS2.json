@@ -67,7 +67,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "bfbtzopglup6oc"
+        "name": "InfluxDB"
       },
       "query": "from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DUS2\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\r\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\r\n  |> filter(fn: (r) => r[\"sensor\"] == \"DUS2\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n",
       "refId": "A"
@@ -75,7 +75,7 @@
   ],
   "datasource": {
     "type": "influxdb",
-    "uid": "bfbtzopglup6oc"
+    "name": "InfluxDB"
   },
   "options": {
     "tooltip": {

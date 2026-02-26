@@ -95,7 +95,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "bfbtzopglup6oc"
+        "name": "InfluxDB"
       },
       "options": {
         "tooltip": {
@@ -199,7 +199,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "bfbtzopglup6oc"
+        "name": "InfluxDB"
       },
       "options": {
         "tooltip": {
@@ -263,7 +263,7 @@
     }
   ],
   "datasource": {
-    "uid": "bfbtzopglup6oc",
+    "name": "InfluxDB",
     "type": "influxdb"
   },
   "options": {
@@ -360,7 +360,7 @@
   ],
   "datasource": {
     "type": "influxdb",
-    "uid": "bfbtzopglup6oc"
+    "name": "InfluxDB"
   },
   "options": {
     "tooltip": {
@@ -464,7 +464,7 @@
   ],
   "datasource": {
     "type": "influxdb",
-    "uid": "bfbtzopglup6oc"
+    "name": "InfluxDB"
   },
   "options": {
     "tooltip": {
@@ -549,7 +549,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "bfbtzopglup6oc"
+        "name": "InfluxDB"
       },
       "query": "from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DUS1\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\r\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\r\n  |> filter(fn: (r) => r[\"sensor\"] == \"DUS1\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n",
       "refId": "A"
@@ -557,7 +557,7 @@
   ],
   "datasource": {
     "type": "influxdb",
-    "uid": "bfbtzopglup6oc"
+    "name": "InfluxDB"
   },
   "options": {
     "tooltip": {
@@ -661,7 +661,7 @@
   ],
   "datasource": {
     "type": "influxdb",
-    "uid": "bfbtzopglup6oc"
+    "name": "InfluxDB"
   },
   "options": {
     "tooltip": {
@@ -765,7 +765,7 @@
   ],
   "datasource": {
     "type": "influxdb",
-    "uid": "bfbtzopglup6oc"
+    "name": "InfluxDB"
   },
   "options": {
     "tooltip": {
@@ -850,7 +850,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "bfbtzopglup6oc"
+        "name": "InfluxDB"
       },
       "query": "from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DUS2\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\r\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\r\n  |> filter(fn: (r) => r[\"sensor\"] == \"DUS2\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n",
       "refId": "A"
@@ -858,7 +858,7 @@
   ],
   "datasource": {
     "type": "influxdb",
-    "uid": "bfbtzopglup6oc"
+    "name": "InfluxDB"
   },
   "options": {
     "tooltip": {
@@ -962,7 +962,7 @@
   ],
   "datasource": {
     "type": "influxdb",
-    "uid": "bfbtzopglup6oc"
+    "name": "InfluxDB"
   },
   "options": {
     "tooltip": {
@@ -1026,12 +1026,12 @@
   "pluginVersion": "12.3.2",
   "targets": [
     {
-      "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+      "datasource": {"type": "influxdb", "name": "InfluxDB"},
       "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DHT\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> yield(name: \"mean\")",
       "refId": "A"
     }
   ],
-  "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+  "datasource": {"type": "influxdb", "name": "InfluxDB"},
   "options": {
     "tooltip": {"mode": "single", "sort": "none", "hideZeros": false},
     "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
@@ -1085,7 +1085,7 @@
     }
   ],
   "datasource": {
-    "uid": "bfbtzopglup6oc",
+    "name": "InfluxDB",
     "type": "influxdb"
   },
   "options": {
@@ -1142,7 +1142,7 @@
     }
   ],
   "datasource": {
-    "uid": "bfbtzopglup6oc",
+    "name": "InfluxDB",
     "type": "influxdb"
   },
   "options": {
@@ -1215,7 +1215,7 @@
       "query": "import \"experimental\"\n\nbtn = from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BTN\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"pressed\" then 1 else 0 }))\n\nbtn_zero_after = btn\n  |> map(fn: (r) => ({ r with _value: 0, _time: experimental.addDuration(d: 1s, to: r._time) }))\n\nunion(tables: [btn, btn_zero_after])\n  |> sort(columns: [\"_time\"])\n  |> yield(name: \"state\")"
     }
   ],
-  "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+  "datasource": {"type": "influxdb", "name": "InfluxDB"},
   "options": {
     "tooltip": {"mode": "single", "sort": "none", "hideZeros": false},
     "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
@@ -1269,12 +1269,12 @@
   "pluginVersion": "12.3.2",
   "targets": [
     {
-      "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+      "datasource": {"type": "influxdb", "name": "InfluxDB"},
       "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DHT\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DHT1_temperature\" or r[\"sensor\"] == \"DHT1_humidity\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
       "refId": "A"
     }
   ],
-  "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+  "datasource": {"type": "influxdb", "name": "InfluxDB"},
   "options": {
     "tooltip": {"mode": "single", "sort": "none", "hideZeros": false},
     "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
@@ -1328,12 +1328,12 @@
   "pluginVersion": "12.3.2",
   "targets": [
     {
-      "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+      "datasource": {"type": "influxdb", "name": "InfluxDB"},
       "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DHT\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DHT2_humidity\" or r[\"sensor\"] == \"DHT2_temperature\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
       "refId": "A"
     }
   ],
-  "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+  "datasource": {"type": "influxdb", "name": "InfluxDB"},
   "options": {
     "tooltip": {"mode": "single", "sort": "none", "hideZeros": false},
     "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
@@ -1387,7 +1387,7 @@
     }
   ],
   "datasource": {
-    "uid": "bfbtzopglup6oc",
+    "name": "InfluxDB",
     "type": "influxdb"
   },
   "options": {
@@ -1438,7 +1438,7 @@
     }
   ],
   "datasource": {
-    "uid": "bfbtzopglup6oc",
+    "name": "InfluxDB",
     "type": "influxdb"
   },
   "options": {
@@ -1480,7 +1480,7 @@
       "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"IR\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"IR\")\n  |> yield(name: \"ir_state\")"
     }
   ],
-  "datasource": {"uid": "bfbtzopglup6oc", "type": "influxdb"},
+  "datasource": {"name": "InfluxDB", "type": "influxdb"},
   "options": {"showHeader": true, "cellHeight": "sm", "showValues": true}
 }
 

@@ -46,7 +46,7 @@
     }
   ],
   "datasource": {
-    "uid": "bfbtzopglup6oc",
+    "name": "InfluxDB",
     "type": "influxdb"
   },
   "options": {

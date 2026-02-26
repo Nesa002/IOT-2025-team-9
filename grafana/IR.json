@@ -31,6 +31,6 @@
       "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"IR\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"IR\")\n  |> yield(name: \"ir_state\")"
     }
   ],
-  "datasource": {"uid": "bfbtzopglup6oc", "type": "influxdb"},
+  "datasource": {"name": "InfluxDB", "type": "influxdb"},
   "options": {"showHeader": true, "cellHeight": "sm", "showValues": true}
 }
