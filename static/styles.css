@@ -168,3 +168,40 @@ iframe {
     border: none;
     cursor: pointer;
 }
+
+/* ===== Camera Grid ===== */
+.controls {
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    background: #1c1c1c;
+    margin-bottom: 8px;
+}
+
+.controls input {
+    padding: 6px;
+    font-size: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px;
+    padding: 4px;
+}
+
+.cam {
+    background: #000;
+    position: relative;
+    aspect-ratio: 16 / 9;
+}
+
+.cam img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

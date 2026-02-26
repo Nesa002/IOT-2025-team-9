@@ -14,6 +14,11 @@
                 <button id="alarm-off-btn">Isključi alarm</button>
             </div>
         </section>
+        <section>
+            <h2>Live Camera Grid</h2>
+            <div class="controls" id="camera-controls"></div>
+            <div class="grid" id="camera-grid"></div>
+        </section>
         <section id="timer-panel" class="timer">
             <div class="timer-content">
                 <span id="timer-display">00:00</span>
@@ -175,6 +180,39 @@
             if (state.color) {
                 rgbPicker.value = state.color;
             }
+        }
+
+        const defaultCameraUrls = [
+        "http://192.168.107.141:8080/?action=stream",
+        "http://192.168.107.142:8080/?action=stream",
+        "http://192.168.107.143:8080/?action=stream",
+        "http://192.168.107.144:8080/?action=stream",
+        "http://192.168.107.145:8080/?action=stream",
+        "http://192.168.107.146:8080/?action=stream",
+        "http://192.168.107.147:8080/?action=stream",
+        "http://192.168.107.148:8080/?action=stream",
+        "http://192.168.107.149:8080/?action=stream"
+        ];
+
+        const cameraControls = document.getElementById("camera-controls");
+        const cameraGrid = document.getElementById("camera-grid");
+
+        defaultCameraUrls.forEach((url, i) => {
+            const input = document.createElement("input");
+            input.placeholder = `Camera ${i + 1} URL`;
+            input.value = url;
+            input.onchange = () => updateCamera(i, input.value);
+            cameraControls.appendChild(input);
+
+            const cam = document.createElement("div");
+            cam.className = "cam";
+            cam.innerHTML = `<img id="cam-${i}" src="${url}" />`;
+            cameraGrid.appendChild(cam);
+        });
+
+        function updateCamera(index, url) {
+            const img = document.getElementById(`cam-${index}`);
+            img.src = url;
         }
 
     </script>
