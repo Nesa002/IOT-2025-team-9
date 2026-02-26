@@ -122,7 +122,6 @@ class LogicController:
             self.pin_buffer = ""
             return
 
-        # TODO: enter pin instead of *
         if key == "*":
             if(self.security_armed):
                 if self.pin_buffer == self.pin_code:
@@ -221,9 +220,11 @@ class LogicController:
 
 
             if name == "GYRO" and isinstance(value, dict):
-
-                # TODO: use actual value
-                magnitude = math.sqrt(sum(float(value.get(k, 0)) ** 2 for k in ("gx", "gy", "gz")))
+                magnitude = math.sqrt(
+                    value["gx"] ** 2 +
+                    value["gy"] ** 2 +
+                    value["gz"] ** 2
+                )
                 if magnitude > 700:
                     self._set_alarm(True, "gsg_movement")
 
