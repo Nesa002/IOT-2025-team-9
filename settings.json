@@ -30,6 +30,7 @@
             "DHT2_temperature": "iot/sensors/dht2/temperature",
             "BRGB": "iot/sensors/rgb",
             "IR": "iot/sensors/ir",
+            "GYRO": "iot/sensors/gyro",
             "LOGIC": "iot/logic/event"
         }
     },

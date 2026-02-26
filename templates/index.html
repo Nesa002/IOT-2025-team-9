@@ -177,12 +177,6 @@
             }
         }
 
-        // Live updates
-        const rgbEvt = new EventSource("/api/rgb/stream");
-        rgbEvt.onmessage = (e) => {
-            const state = JSON.parse(e.data);
-            updateRGBUI(state);
-        };
     </script>
 </body>
 </html>

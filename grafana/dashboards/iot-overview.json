@@ -8,37 +8,1483 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": {"type": "influxdb", "uid": "influx-iot"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
-      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 0},
-      "id": 1,
-      "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "none"}},
+      "id": 6,
+      "type": "timeseries",
+      "title": "DB Buzzer",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "stepAfter",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "showValues": false,
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "axisCenteredZero": false,
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "idle",
+                  "color": "green"
+                },
+                "1": {
+                  "text": "BZZ",
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 1,
+                "color": "red"
+              }
+            ]
+          },
+          "min": 0,
+          "max": 1,
+          "decimals": 0,
+          "unit": "string"
+        },
+        "overrides": []
+      },
+      "pluginVersion": "12.3.2",
       "targets": [
         {
-          "datasource": {"type": "influxdb", "uid": "influx-iot"},
-          "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._field == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
-          "refId": "A"
+          "refId": "A",
+          "query": "import \"experimental\"\n\nbuzz = from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DB\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"buzz\" then 1 else 0 }))\n\nbuzz_zero_after = buzz\n  |> map(fn: (r) => ({ r with _value: 0, _time: experimental.addDuration(d: 1s, to: r._time) }))\n\nunion(tables: [buzz, buzz_zero_after])\n  |> sort(columns: [\"_time\"])\n  |> yield(name: \"state\")\n"
         }
       ],
-      "title": "Sva numerička očitavanja",
-      "type": "timeseries"
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bfbtzopglup6oc"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none",
+          "hideZeros": false
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        }
+      }
     },
     {
-      "datasource": {"type": "influxdb", "uid": "influx-iot"},
-      "fieldConfig": {"defaults": {}, "overrides": []},
+      "id": 4,
+      "type": "timeseries",
+      "title": "DL Sensor",
       "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
-      "id": 2,
-      "options": {"showHeader": true},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "stepAfter",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "showValues": false,
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "axisCenteredZero": false,
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "closed",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "open",
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "red"
+              },
+              {
+                "value": 1,
+                "color": "green"
+              }
+            ]
+          },
+          "min": 0,
+          "max": 1,
+          "decimals": 0,
+          "unit": "string"
+        },
+        "overrides": []
+      },
+      "pluginVersion": "12.3.2",
       "targets": [
         {
-          "datasource": {"type": "influxdb", "uid": "influx-iot"},
-          "query": "from(bucket: \"sensors\")\n  |> range(start: -24h)\n  |> filter(fn: (r) => r._field == \"value\" or r._field == \"state\")\n  |> group(columns: [\"sensor\", \"_field\"])\n  |> last()",
-          "refId": "A"
+          "refId": "A",
+          "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DL\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"led_on\" then 1 else 0 }))\n  |> yield(name: \"state\")\n"
         }
       ],
-      "title": "Poslednje stanje svih senzora",
-      "type": "table"
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bfbtzopglup6oc"
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none",
+          "hideZeros": false
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        }
+      }
+    },
+    {
+  "id": 7,
+  "type": "table",
+  "title": "DMS Key Presses",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "align": "auto",
+        "footer": {
+          "reducers": []
+        },
+        "cellOptions": {
+          "type": "auto"
+        },
+        "inspect": false,
+        "hideFrom": {
+          "viz": false
+        }
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      },
+      "color": {
+        "mode": "thresholds"
+      }
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DMS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\n  |> yield(name: \"key_presses\")"
     }
+  ],
+  "datasource": {
+    "uid": "bfbtzopglup6oc",
+    "type": "influxdb"
+  },
+  "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "showValues": true
+  }
+},
+{
+  "id": 2,
+  "type": "timeseries",
+  "title": "DPIR1",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "stepAfter",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 2,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [
+        {
+          "type": "value",
+          "options": {
+            "0": {
+              "text": "stopped",
+              "color": "green"
+            },
+            "1": {
+              "text": "detected",
+              "color": "red"
+            }
+          }
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      },
+      "min": 0,
+      "max": 1,
+      "decimals": 0,
+      "unit": "string"
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DPIR1\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DPIR1\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"motion_detected\" then 1 else 0 }))\n  |> yield(name: \"mean\")\n"
+    }
+  ],
+  "datasource": {
+    "type": "influxdb",
+    "uid": "bfbtzopglup6oc"
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  }
+},
+{
+  "id": 3,
+  "type": "timeseries",
+  "title": "DS1",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "stepAfter",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 2,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [
+        {
+          "type": "value",
+          "options": {
+            "0": {
+              "text": "closed",
+              "color": "red"
+            },
+            "1": {
+              "text": "open",
+              "color": "green"
+            }
+          }
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "red"
+          },
+          {
+            "value": 1,
+            "color": "green"
+          }
+        ]
+      },
+      "min": 0,
+      "max": 1,
+      "decimals": 0,
+      "unit": "string"
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DS1\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"open\" then 1 else 0 }))\n  |> yield(name: \"state\")\n"
+    }
+  ],
+  "datasource": {
+    "type": "influxdb",
+    "uid": "bfbtzopglup6oc"
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  }
+},
+{
+  "id": 1,
+  "type": "timeseries",
+  "title": "DUS1",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "linear",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 1,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "palette-classic"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          },
+          {
+            "color": "red",
+            "value": 80
+          }
+        ]
+      },
+      "unit": "cm",
+      "min": 0,
+      "max": 199
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bfbtzopglup6oc"
+      },
+      "query": "from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DUS1\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-01\")\r\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI1\")\r\n  |> filter(fn: (r) => r[\"sensor\"] == \"DUS1\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n",
+      "refId": "A"
+    }
+  ],
+  "datasource": {
+    "type": "influxdb",
+    "uid": "bfbtzopglup6oc"
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  }
+},
+{
+  "id": 8,
+  "type": "timeseries",
+  "title": "DPIR2",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "stepAfter",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 2,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [
+        {
+          "type": "value",
+          "options": {
+            "0": {
+              "text": "stopped",
+              "color": "green"
+            },
+            "1": {
+              "text": "detected",
+              "color": "red"
+            }
+          }
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      },
+      "min": 0,
+      "max": 1,
+      "decimals": 0,
+      "unit": "string"
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DPIR2\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DPIR2\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"motion_detected\" then 1 else 0 }))\n  |> yield(name: \"mean\")\n"
+    }
+  ],
+  "datasource": {
+    "type": "influxdb",
+    "uid": "bfbtzopglup6oc"
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  }
+},
+{
+  "id": 9,
+  "type": "timeseries",
+  "title": "DPIR3",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "stepAfter",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 2,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [
+        {
+          "type": "value",
+          "options": {
+            "0": {
+              "text": "stopped",
+              "color": "green"
+            },
+            "1": {
+              "text": "detected",
+              "color": "red"
+            }
+          }
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      },
+      "min": 0,
+      "max": 1,
+      "decimals": 0,
+      "unit": "string"
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DPIR3\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DPIR3\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"motion_detected\" then 1 else 0 }))\n  |> yield(name: \"mean\")\n"
+    }
+  ],
+  "datasource": {
+    "type": "influxdb",
+    "uid": "bfbtzopglup6oc"
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  }
+},
+{
+  "id": 10,
+  "type": "timeseries",
+  "title": "DUS2",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "linear",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 1,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "palette-classic"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          },
+          {
+            "color": "red",
+            "value": 80
+          }
+        ]
+      },
+      "unit": "cm",
+      "min": 0,
+      "max": 199
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bfbtzopglup6oc"
+      },
+      "query": "from(bucket: \"sensors\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DUS2\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\r\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\r\n  |> filter(fn: (r) => r[\"sensor\"] == \"DUS2\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n",
+      "refId": "A"
+    }
+  ],
+  "datasource": {
+    "type": "influxdb",
+    "uid": "bfbtzopglup6oc"
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  }
+},
+{
+  "id": 11,
+  "type": "timeseries",
+  "title": "DS2",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 12},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "stepAfter",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 2,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        }
+      },
+      "color": {
+        "mode": "thresholds"
+      },
+      "mappings": [
+        {
+          "type": "value",
+          "options": {
+            "0": {
+              "text": "closed",
+              "color": "red"
+            },
+            "1": {
+              "text": "open",
+              "color": "green"
+            }
+          }
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "red"
+          },
+          {
+            "value": 1,
+            "color": "green"
+          }
+        ]
+      },
+      "min": 0,
+      "max": 1,
+      "decimals": 0,
+      "unit": "string"
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DS2\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"open\" then 1 else 0 }))\n  |> yield(name: \"state\")\n"
+    }
+  ],
+  "datasource": {
+    "type": "influxdb",
+    "uid": "bfbtzopglup6oc"
+  },
+  "options": {
+    "tooltip": {
+      "mode": "single",
+      "sort": "none",
+      "hideZeros": false
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  }
+},
+{
+  "id": 12,
+  "type": "timeseries",
+  "title": "DHT3",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 22},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "linear",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 1,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {"mode": "none", "group": "A"},
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {"type": "linear"},
+        "axisCenteredZero": false,
+        "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+        "thresholdsStyle": {"mode": "off"}
+      },
+      "color": {"mode": "palette-classic"},
+      "mappings": [],
+      "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 80}]}
+    },
+    "overrides": [
+      {
+        "matcher": {"id": "byName", "options": "temperature"},
+        "properties": [{"id": "unit", "value": "°C"}]
+      },
+      {
+        "matcher": {"id": "byName", "options": "humidity"},
+        "properties": [{"id": "unit", "value": "%"}]
+      }
+    ]
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DHT\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> yield(name: \"mean\")",
+      "refId": "A"
+    }
+  ],
+  "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+  "options": {
+    "tooltip": {"mode": "single", "sort": "none", "hideZeros": false},
+    "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
+  }
+},
+{
+  "id": 13,
+  "type": "table",
+  "title": "GYRO Sensor",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 32},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "align": "auto",
+        "footer": {
+          "reducers": []
+        },
+        "cellOptions": {
+          "type": "auto"
+        },
+        "inspect": false,
+        "hideFrom": {
+          "viz": false
+        }
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      },
+      "color": {
+        "mode": "thresholds"
+      }
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"GYRO\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"GYRO\")\n  |> yield(name: \"gyro_state\")"
+    }
+  ],
+  "datasource": {
+    "uid": "bfbtzopglup6oc",
+    "type": "influxdb"
+  },
+  "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "showValues": true
+  }
+},
+{
+  "id": 14,
+  "type": "table",
+  "title": "4SD Sensor",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 42},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "align": "auto",
+        "footer": {
+          "reducers": []
+        },
+        "cellOptions": {
+          "type": "auto"
+        },
+        "inspect": false,
+        "hideFrom": {
+          "viz": false
+        }
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      },
+      "color": {
+        "mode": "thresholds"
+      }
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"4SD\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"4SD\")\n  |> yield(name: \"4sd_state\")"
+    }
+  ],
+  "datasource": {
+    "uid": "bfbtzopglup6oc",
+    "type": "influxdb"
+  },
+  "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "showValues": true
+  }
+},
+{
+  "id": 15,
+  "type": "timeseries",
+  "title": "BTN Press",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 52},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "stepAfter",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 2,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {"type": "linear"},
+        "axisCenteredZero": false,
+        "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+        "thresholdsStyle": {"mode": "off"}
+      },
+      "color": {"mode": "thresholds"},
+      "mappings": [
+        {
+          "type": "value",
+          "options": {
+            "0": {"text": "idle", "color": "green"},
+            "1": {"text": "PRESSED", "color": "red"}
+          }
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {"value": null, "color": "green"},
+          {"value": 1, "color": "red"}
+        ]
+      },
+      "min": 0,
+      "max": 1,
+      "decimals": 0,
+      "unit": "string"
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "import \"experimental\"\n\nbtn = from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BTN\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-02\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI2\")\n  |> map(fn: (r) => ({ r with _value: if r._value == \"pressed\" then 1 else 0 }))\n\nbtn_zero_after = btn\n  |> map(fn: (r) => ({ r with _value: 0, _time: experimental.addDuration(d: 1s, to: r._time) }))\n\nunion(tables: [btn, btn_zero_after])\n  |> sort(columns: [\"_time\"])\n  |> yield(name: \"state\")"
+    }
+  ],
+  "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+  "options": {
+    "tooltip": {"mode": "single", "sort": "none", "hideZeros": false},
+    "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
+  }
+},
+{
+  "id": 16,
+  "type": "timeseries",
+  "title": "DHT1",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 32},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "linear",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 1,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {"mode": "none", "group": "A"},
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {"type": "linear"},
+        "axisCenteredZero": false,
+        "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+        "thresholdsStyle": {"mode": "off"}
+      },
+      "color": {"mode": "palette-classic"},
+      "mappings": [],
+      "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 80}]}
+    },
+    "overrides": [
+      {
+        "matcher": {"id": "byName", "options": "DHT1_temperature"},
+        "properties": [{"id": "unit", "value": "°C"}]
+      },
+      {
+        "matcher": {"id": "byName", "options": "DHT1_humidity"},
+        "properties": [{"id": "unit", "value": "%"}]
+      }
+    ]
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DHT\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DHT1_temperature\" or r[\"sensor\"] == \"DHT1_humidity\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+      "refId": "A"
+    }
+  ],
+  "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+  "options": {
+    "tooltip": {"mode": "single", "sort": "none", "hideZeros": false},
+    "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
+  }
+},
+{
+  "id": 17,
+  "type": "timeseries",
+  "title": "DHT2",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 42},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "linear",
+        "barAlignment": 0,
+        "barWidthFactor": 0.6,
+        "lineWidth": 1,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "showValues": false,
+        "pointSize": 5,
+        "stacking": {"mode": "none", "group": "A"},
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {"type": "linear"},
+        "axisCenteredZero": false,
+        "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+        "thresholdsStyle": {"mode": "off"}
+      },
+      "color": {"mode": "palette-classic"},
+      "mappings": [],
+      "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 80}]}
+    },
+    "overrides": [
+      {
+        "matcher": {"id": "byName", "options": "DHT2_temperature"},
+        "properties": [{"id": "unit", "value": "°C"}]
+      },
+      {
+        "matcher": {"id": "byName", "options": "DHT2_humidity"},
+        "properties": [{"id": "unit", "value": "%"}]
+      }
+    ]
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"DHT\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"DHT2_humidity\" or r[\"sensor\"] == \"DHT2_temperature\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+      "refId": "A"
+    }
+  ],
+  "datasource": {"type": "influxdb", "uid": "bfbtzopglup6oc"},
+  "options": {
+    "tooltip": {"mode": "single", "sort": "none", "hideZeros": false},
+    "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
+  }
+},
+{
+  "id": 18,
+  "type": "table",
+  "title": "LCD",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 52},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "align": "auto",
+        "footer": {
+          "reducers": []
+        },
+        "cellOptions": {
+          "type": "auto"
+        },
+        "inspect": false,
+        "hideFrom": {
+          "viz": false
+        }
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      },
+      "color": {
+        "mode": "thresholds"
+      }
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"LCD\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"LCD\")\n  |> yield(name: \"lcd_state\")"
+    }
+  ],
+  "datasource": {
+    "uid": "bfbtzopglup6oc",
+    "type": "influxdb"
+  },
+  "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "showValues": true
+  }
+},
+{
+  "id": 19,
+  "type": "table",
+  "title": "BRGB",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 62},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "align": "auto",
+        "footer": {
+          "reducers": []
+        },
+        "cellOptions": {
+          "type": "auto"
+        },
+        "inspect": false,
+        "hideFrom": {
+          "viz": false
+        }
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {"value": null, "color": "green"},
+          {"value": 1, "color": "red"}
+        ]
+      },
+      "color": {
+        "mode": "thresholds"
+      }
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"BRGB\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"BRGB\")\n  |> yield(name: \"brgb_state\")"
+    }
+  ],
+  "datasource": {
+    "uid": "bfbtzopglup6oc",
+    "type": "influxdb"
+  },
+  "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "showValues": true
+  }
+},
+{
+  "id": 20,
+  "type": "table",
+  "title": "IR Sensor",
+  "gridPos": {"h": 10, "w": 24, "x": 0, "y": 72},
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "align": "auto",
+        "footer": {"reducers": []},
+        "cellOptions": {"type": "auto"},
+        "inspect": false,
+        "hideFrom": {"viz": false}
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {"value": null, "color": "green"},
+          {"value": 1, "color": "red"}
+        ]
+      },
+      "color": {"mode": "thresholds"}
+    },
+    "overrides": []
+  },
+  "pluginVersion": "12.3.2",
+  "targets": [
+    {
+      "refId": "A",
+      "query": "from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"IR\")\n  |> filter(fn: (r) => r[\"_field\"] == \"state\")\n  |> filter(fn: (r) => r[\"device\"] == \"iot-edge-03\")\n  |> filter(fn: (r) => r[\"pi_id\"] == \"PI3\")\n  |> filter(fn: (r) => r[\"sensor\"] == \"IR\")\n  |> yield(name: \"ir_state\")"
+    }
+  ],
+  "datasource": {"uid": "bfbtzopglup6oc", "type": "influxdb"},
+  "options": {"showHeader": true, "cellHeight": "sm", "showValues": true}
+}
+
+
   ],
   "refresh": "10s",
   "schemaVersion": 39,
